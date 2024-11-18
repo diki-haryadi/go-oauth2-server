@@ -3,9 +3,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE authorization_codes (
    "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
    "client_id" UUID NOT NULL,  -- Assuming client_id is a UUID
-   "client" VARCHAR(200) NOT NULL,  -- Increased length for token
    "user_id" UUID NOT NULL,     -- Assuming user_id is a UUID
-   "user" VARCHAR(200) NOT NULL,  -- Increased length for token
    "code" VARCHAR(300) NOT NULL,  -- Increased length for token
    "redirect_uri" VARCHAR(200) NOT NULL,
    "expires_at" TIMESTAMP WITH TIME ZONE DEFAULT NULL,  -- Expiration timestamp

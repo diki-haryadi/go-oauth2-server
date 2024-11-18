@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE scopes (
     "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
     "scope" VARCHAR(200) NOT NULL UNIQUE,
-    "description" VARCHAR(300) NOT NULL,
+    "description" VARCHAR(300) NULL,
     "is_default" VARCHAR(200) NOT NULL,
     "created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
