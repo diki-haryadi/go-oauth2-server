@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	oauthConfigurator "github.com/diki-haryadi/go-micro-template/internal/oauth/configurator"
 	"github.com/diki-haryadi/ztools/config"
 	"github.com/diki-haryadi/ztools/env"
 	"github.com/diki-haryadi/ztools/logger"
@@ -102,6 +103,11 @@ func configureModule(ctx context.Context, ic *iContainer.IContainer, extBridge *
 	}
 
 	err = healthCheckConfigurator.NewConfigurator(ic).Configure(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = oauthConfigurator.NewConfigurator(ic, extBridge).Configure(ctx)
 	if err != nil {
 		return err
 	}
