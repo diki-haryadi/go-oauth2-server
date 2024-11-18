@@ -4,6 +4,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 	"github.com/diki-haryadi/ztools/constant"
 	"github.com/joho/godotenv"
+	"github.com/kelseyhightower/envconfig"
 	"log"
 )
 

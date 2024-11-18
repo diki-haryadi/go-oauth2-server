@@ -2,10 +2,7 @@ package oauthConfigurator
 
 import (
 	"context"
-	articleV1 "github.com/diki-haryadi/protobuf-template/go-micro-template/article/v1"
-
 	sampleExtServiceUseCase "github.com/diki-haryadi/go-micro-template/external/sample_ext_service/usecase"
-	oauthGrpcController "github.com/diki-haryadi/go-micro-template/internal/oauth/delivery/grpc"
 	oauthHttpController "github.com/diki-haryadi/go-micro-template/internal/oauth/delivery/http"
 	oauthKafkaProducer "github.com/diki-haryadi/go-micro-template/internal/oauth/delivery/kafka/producer"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain"
@@ -31,8 +28,8 @@ func (c *configurator) Configure(ctx context.Context) error {
 	useCase := oauthUseCase.NewUseCase(repository, seServiceUseCase, kafkaProducer)
 
 	// grpc
-	grpcController := oauthGrpcController.NewController(useCase)
-	articleV1.RegisterArticleServiceServer(c.ic.GrpcServer.GetCurrentGrpcServer(), grpcController)
+	//grpcController := oauthGrpcController.NewController(useCase)
+	//articleV1.RegisterArticleServiceServer(c.ic.GrpcServer.GetCurrentGrpcServer(), grpcController)
 
 	// http
 	httpRouterGp := c.ic.EchoHttpServer.GetEchoInstance().Group(c.ic.EchoHttpServer.GetBasePath())

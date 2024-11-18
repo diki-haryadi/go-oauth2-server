@@ -37,7 +37,7 @@ func (uc *useCase) AuthorizationCodeGrant(ctx context.Context, code, redirectURI
 	}
 
 	// 4. Log in the user
-	accessToken, refreshToken, err := uc.Login(authorizationCode.Client, authorizationCode.User, authorizationCode.Scope)
+	accessToken, refreshToken, err := uc.Login(ctx, authorizationCode.Client, authorizationCode.User, authorizationCode.Scope)
 	if err != nil {
 		return nil, err
 	}
