@@ -5,24 +5,35 @@ import (
 	"fmt"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	oauthDto "github.com/diki-haryadi/go-micro-template/internal/oauth/dto"
+	"time"
 )
 
-func (rp *repository) GrantAccessToken(client *oauthDomain.Client, user *oauthDomain.Users, expiresIn int, scope string) (*oauthDomain.AccessToken, error) {
+func (rp *repository) GrantAccessToken(ctx context.Context, client *oauthDomain.Client, user *oauthDomain.Users, expiresIn int, scope string) (*oauthDomain.AccessToken, error) {
 	// Begin a transaction
-	tx, _ := rp.postgres.SqlxDB.BeginTx(context.Background(), nil)
-
-	// Delete expired access tokens
-	query, _ := tx.Query("SELECT * FROM access_tokens WHERE client_id = $1", client.ID)
-	if user != nil && fmt.Sprint(user.ID) != "" {
-		query, _ = tx.Query("SELECT * FROM access_tokens WHERE client_id = $1", user.ID)
-	} else {
-		query, _ = tx.Query("SELECT * FROM access_tokens WHERE user_id IS NULL")
+	tx, err := rp.postgres.SqlxDB.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	fmt.Println(query)
 
-	sqlQuery := "DELETE FROM access_tokens WHERE expires_at <= NOW()"
-	// Execute the query
-	_, err := tx.Exec(sqlQuery)
+	rawQuery := " WHERE client_id = $1"
+	args := []interface{}{fmt.Sprint(client.ID)}
+
+	// Add the user_id condition if necessary
+	if user != nil && fmt.Sprint(user) != "" {
+		rawQuery += " AND user_id = $2"
+		args = append(args, user.ID) // Add user.ID to the arguments list
+	} else {
+		rawQuery += " AND user_id IS NULL"
+	}
+
+	// Add the expiration condition
+	rawQuery += " AND expires_at <= NOW()"
+
+	// Complete the DELETE statement
+	query := "DELETE FROM access_tokens" + rawQuery
+
+	// Execute the query using parameterized arguments
+	_, err = tx.Exec(query, args...)
 	if err != nil {
 		// If an error occurs, rollback the transaction
 		_ = tx.Rollback()
@@ -30,15 +41,27 @@ func (rp *repository) GrantAccessToken(client *oauthDomain.Client, user *oauthDo
 	}
 
 	// Create a new access token
+	expiresAt := time.Now().Add(time.Duration(expiresIn) * time.Second)
 	accessToken := oauthDto.NewOauthAccessToken(client, user, expiresIn, scope)
-	sqlQueryAT := `
-    INSERT INTO access_tokens (client, user_id, expires_in, scope)
-    VALUES ($1, $2, $3, $4)`
 
-	// Execute the INSERT query with the provided values
-	_, err = tx.Exec(sqlQueryAT, client, user, expiresIn, scope)
+	var sqlQueryAT string
+	var insertArgs []interface{}
+
+	if user != nil {
+		sqlQueryAT = `
+        INSERT INTO access_tokens (client_id, user_id, token, expires_at, scope)
+        VALUES ($1, $2, $3, $4, $5)`
+		insertArgs = append(insertArgs, fmt.Sprint(client.ID), user.ID)
+	} else {
+		sqlQueryAT = `
+        INSERT INTO access_tokens (client_id, token, expires_at, scope)
+        VALUES ($1, $2, $3, $4)`
+		insertArgs = append(insertArgs, fmt.Sprint(client.ID))
+	}
+
+	insertArgs = append(insertArgs, accessToken.Token, expiresAt, scope)
+	_, err = tx.Exec(sqlQueryAT, insertArgs...)
 	if err != nil {
-		// If an error occurs, rollback the transaction
 		_ = tx.Rollback()
 		return nil, err
 	}
@@ -47,7 +70,7 @@ func (rp *repository) GrantAccessToken(client *oauthDomain.Client, user *oauthDo
 
 	// Commit the transaction
 	if err = tx.Commit(); err != nil {
-		_ = tx.Rollback() // rollback the transaction
+		_ = tx.Rollback()
 		return nil, err
 	}
 

@@ -2,34 +2,12 @@ package oauthRepository
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	"github.com/diki-haryadi/go-micro-template/pkg"
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 	"github.com/google/uuid"
 	"strings"
 	"time"
-)
-
-var (
-	// MinPasswordLength defines minimum password length
-	MinPasswordLength = 6
-
-	// ErrPasswordTooShort ...
-	ErrPasswordTooShort = fmt.Errorf(
-		"Password must be at least %d characters long",
-		MinPasswordLength,
-	)
-	// ErrUserNotFound ...
-	ErrUserNotFound = errors.New("User not found")
-	// ErrInvalidUserPassword ...
-	ErrInvalidUserPassword = errors.New("Invalid user password")
-	// ErrCannotSetEmptyUsername ...
-	ErrCannotSetEmptyUsername = errors.New("Cannot set empty username")
-	// ErrUserPasswordNotSet ...
-	ErrUserPasswordNotSet = errors.New("User password not set")
-	// ErrUsernameTaken ...
-	ErrUsernameTaken = errors.New("Username taken")
 )
 
 // FindUserByUsername looks up a user by username
@@ -46,7 +24,7 @@ func (rp *repository) FindUserByUsername(username string) (*oauthDomain.Users, e
 
 	// Check if no rows are found (user not found)
 	if err == sql.ErrNoRows {
-		return nil, ErrUserNotFound
+		return nil, response.ErrUserNotFound
 	}
 	if err != nil {
 		return nil, err // Handle any other error
@@ -70,8 +48,8 @@ func (rp *repository) CreateUserCommon(roleID, username, password string) (*oaut
 
 	// If the password is being set, hash it
 	if password != "" {
-		if len(password) < MinPasswordLength {
-			return nil, ErrPasswordTooShort
+		if len(password) < response.MinPasswordLength {
+			return nil, response.ErrPasswordTooShort
 		}
 
 		passwordHash, err := pkg.HashPassword(password)
@@ -90,7 +68,7 @@ func (rp *repository) CreateUserCommon(roleID, username, password string) (*oaut
 	}
 
 	if count > 0 {
-		return nil, ErrUsernameTaken
+		return nil, response.ErrUsernameTaken
 	}
 
 	// Insert the new user into the database
@@ -110,8 +88,8 @@ func (rp *repository) CreateUserCommon(roleID, username, password string) (*oaut
 
 // SetPasswordCommon updates the user's password using raw SQL
 func (rp *repository) SetPasswordCommon(user *oauthDomain.Users, password string) error {
-	if len(password) < MinPasswordLength {
-		return ErrPasswordTooShort
+	if len(password) < response.MinPasswordLength {
+		return response.ErrPasswordTooShort
 	}
 
 	// Create a bcrypt hash for the password
@@ -139,7 +117,7 @@ func (rp *repository) SetPasswordCommon(user *oauthDomain.Users, password string
 // UpdateUsernameCommon updates the user's username using raw SQL
 func (rp *repository) UpdateUsernameCommon(user *oauthDomain.Users, username string) error {
 	if username == "" {
-		return ErrCannotSetEmptyUsername
+		return response.ErrCannotSetEmptyUsername
 	}
 
 	// Prepare the SQL query to update the username field

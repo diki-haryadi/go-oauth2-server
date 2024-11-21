@@ -17,11 +17,10 @@ func NewRouter(controller oauthDomain.HttpController) *Router {
 }
 
 func (r *Router) Register(e *echo.Group) {
-	e.Group("oauth")
+	oauth := e.Group("/oauth")
 	{
-		e.POST("/tokens", r.controller.Tokens)
-		e.POST("/introspect", r.controller.Introspect)
-
+		oauth.POST("/tokens", r.controller.Tokens)
+		oauth.POST("/introspect", r.controller.Introspect)
 	}
 
 }

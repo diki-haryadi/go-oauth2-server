@@ -2,49 +2,38 @@ package oauthUseCase
 
 import (
 	"context"
-	"errors"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	oauthDto "github.com/diki-haryadi/go-micro-template/internal/oauth/dto"
 	"github.com/diki-haryadi/go-micro-template/pkg"
-)
-
-const (
-	// AccessTokenHint ...
-	AccessTokenHint = "access_token"
-	// RefreshTokenHint ...
-	RefreshTokenHint = "refresh_token"
-)
-
-var (
-	// ErrTokenHintInvalid ...
-	ErrTokenHintInvalid = errors.New("Invalid token hint")
+	"github.com/diki-haryadi/go-micro-template/pkg/constant"
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 )
 
 func (uc *useCase) IntrospectToken(ctx context.Context, token, tokenTypeHint string, client *oauthDomain.Client) (*oauthDto.IntrospectResponse, error) {
 	// Default to access token hint
 	if tokenTypeHint == "" {
-		tokenTypeHint = AccessTokenHint
+		tokenTypeHint = constant.AccessTokenHint
 	}
 
 	switch tokenTypeHint {
-	case AccessTokenHint:
+	case constant.AccessTokenHint:
 		accessToken, err := uc.repository.Authenticate(token)
 		if err != nil {
 			return nil, err
 		}
 		return uc.NewIntrospectResponseFromAccessToken(accessToken)
-	case RefreshTokenHint:
+	case constant.RefreshTokenHint:
 		refreshToken, err := uc.repository.GetValidRefreshToken(token, client)
 		if err != nil {
 			return nil, err
 		}
 		return uc.NewIntrospectResponseFromRefreshToken(refreshToken)
 	default:
-		return nil, ErrTokenHintInvalid
+		return nil, response.ErrTokenHintInvalid
 	}
 }
 
-// NewIntrospectResponseFromAccessToken creates an introspect response from an access token
+// NewIntrospectResponseFromAccessToken creates an introspect.md response from an access token
 func (uc *useCase) NewIntrospectResponseFromAccessToken(accessToken *oauthDomain.AccessToken) (*oauthDto.IntrospectResponse, error) {
 	var introspectResponse = &oauthDto.IntrospectResponse{
 		Active:    true,
@@ -52,7 +41,6 @@ func (uc *useCase) NewIntrospectResponseFromAccessToken(accessToken *oauthDomain
 		TokenType: pkg.Bearer,
 		ExpiresAt: int(accessToken.ExpiresAt.Unix()),
 	}
-
 	// Fetch the client using the FetchClientByClientID method
 	if accessToken.ClientID.Valid {
 		client, err := uc.repository.FetchClientByClientID(accessToken.ClientID.String)
@@ -74,7 +62,7 @@ func (uc *useCase) NewIntrospectResponseFromAccessToken(accessToken *oauthDomain
 	return introspectResponse, nil
 }
 
-// NewIntrospectResponseFromRefreshToken creates an introspect response from a refresh token
+// NewIntrospectResponseFromRefreshToken creates an introspect.md response from a refresh token
 func (uc *useCase) NewIntrospectResponseFromRefreshToken(refreshToken *oauthDomain.RefreshToken) (*oauthDto.IntrospectResponse, error) {
 	var introspectResponse = &oauthDto.IntrospectResponse{
 		Active:    true,

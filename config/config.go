@@ -6,6 +6,8 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	"log"
+	"path/filepath"
+	"runtime"
 )
 
 type Config struct {
@@ -94,7 +96,16 @@ func init() {
 }
 
 func LoadConfig() *Config {
-	_ = godotenv.Overload()
+	_, callerDir, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Fatal("Error generating env dir")
+	}
+
+	// Define the possible paths to the .env file
+	envPaths := []string{
+		filepath.Join(filepath.Dir(callerDir), "..", "envs/.env"),
+	}
+	_ = godotenv.Overload(envPaths[0])
 	var configLoader Config
 
 	if err := envconfig.Process("BaseConfig", &configLoader); err != nil {

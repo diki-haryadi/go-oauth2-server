@@ -2,21 +2,21 @@ package oauthUseCase
 
 import (
 	sampleExtServiceDomain "github.com/diki-haryadi/go-micro-template/external/sample_ext_service/domain"
-	articleDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain"
+	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain"
 )
 
 type useCase struct {
-	repository              articleDomain.Repository
-	kafkaProducer           articleDomain.KafkaProducer
+	repository              oauthDomain.Repository
+	kafkaProducer           oauthDomain.KafkaProducer
 	sampleExtServiceUseCase sampleExtServiceDomain.SampleExtServiceUseCase
 	allowedRoles            []string
 }
 
 func NewUseCase(
-	repository articleDomain.Repository,
+	repository oauthDomain.Repository,
 	sampleExtServiceUseCase sampleExtServiceDomain.SampleExtServiceUseCase,
-	kafkaProducer articleDomain.KafkaProducer,
-) articleDomain.UseCase {
+	kafkaProducer oauthDomain.KafkaProducer,
+) oauthDomain.UseCase {
 	return &useCase{
 		repository:              repository,
 		kafkaProducer:           kafkaProducer,

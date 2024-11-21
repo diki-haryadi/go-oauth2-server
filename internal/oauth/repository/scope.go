@@ -2,15 +2,10 @@ package oauthRepository
 
 import (
 	"context"
-	"errors"
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 	"sort"
 	"strconv"
 	"strings"
-)
-
-var (
-	// ErrInvalidScope ...
-	ErrInvalidScope = errors.New("Invalid scope")
 )
 
 // GetScope takes a requested scope and, if it's empty, returns the default
@@ -27,7 +22,7 @@ func (rp *repository) GetScope(ctx context.Context, requestedScope string) (stri
 	}
 
 	// Otherwise return error
-	return "", ErrInvalidScope
+	return "", response.ErrInvalidScope
 }
 
 // GetDefaultScope retrieves the default scope from the database using raw SQL
@@ -60,26 +55,21 @@ func (rp *repository) GetDefaultScope(ctx context.Context) string {
 
 // ScopeExists checks if a scope exists using raw SQL
 func (rp *repository) ScopeExists(ctx context.Context, requestedScope string) bool {
-	// Split the requested scope string
-	scopes := strings.Split(requestedScope, " ")
+	scopes := strings.Split(requestedScope, ",")
 
-	// Prepare a query to count how many of the requested scopes exist in the database
 	query := "SELECT COUNT(*) FROM scopes WHERE scope IN ("
-	// Build the query with placeholders for each scope
+
 	placeholders := make([]string, len(scopes))
 	for i := range scopes {
-		placeholders[i] = "$" + strconv.Itoa(i+1) // Generate placeholders for parameterized queries
+		placeholders[i] = "$" + strconv.Itoa(i+1)
 	}
 	query += strings.Join(placeholders, ", ") + ")"
 
-	// Execute the query and get the count
 	var count int
-	err := rp.postgres.SqlxDB.QueryRow(query, scopes).Scan(&count)
+	err := rp.postgres.SqlxDB.QueryRow(query, requestedScope).Scan(&count)
 	if err != nil {
-		// Handle error (e.g., database connection issues)
 		return false
 	}
 
-	// Return true only if all requested scopes are found
 	return count == len(scopes)
 }

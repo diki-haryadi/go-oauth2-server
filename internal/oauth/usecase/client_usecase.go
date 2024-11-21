@@ -2,26 +2,19 @@ package oauthUseCase
 
 import (
 	"context"
-	"errors"
 	"github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	"github.com/diki-haryadi/go-micro-template/pkg"
-)
-
-var (
-	// ErrClientNotFound ...
-	ErrClientNotFound = errors.New("Client not found")
-	// ErrInvalidClientSecret ...
-	ErrInvalidClientSecret = errors.New("Invalid client secret")
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 )
 
 func (uc *useCase) AuthClient(ctx context.Context, clientID, secret string) (*oauthDomain.Client, error) {
 	client, err := uc.repository.FindClientByClientID(ctx, clientID)
 	if err != nil {
-		return nil, ErrClientNotFound
+		return nil, response.ErrClientNotFound
 	}
 
 	if pkg.VerifyPassword(client.Secret, secret) != nil {
-		return nil, ErrInvalidClientSecret
+		return nil, response.ErrInvalidClientSecret
 	}
 	return client, nil
 }

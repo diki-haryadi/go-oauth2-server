@@ -2,16 +2,11 @@ package oauthUseCase
 
 import (
 	"context"
-	"errors"
 	"github.com/diki-haryadi/go-micro-template/config"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	oauthDto "github.com/diki-haryadi/go-micro-template/internal/oauth/dto"
 	"github.com/diki-haryadi/go-micro-template/pkg"
-)
-
-var (
-	// ErrInvalidUsernameOrPassword ...
-	ErrInvalidUsernameOrPassword = errors.New("Invalid username or password")
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 )
 
 func (uc *useCase) PasswordGrant(ctx context.Context, username, password string, scope string, client *oauthDomain.Client) (*oauthDto.AccessTokenResponse, error) {
@@ -25,7 +20,7 @@ func (uc *useCase) PasswordGrant(ctx context.Context, username, password string,
 	user, err := uc.AuthUser(username, password)
 	if err != nil {
 		// For security reasons, return a general error message
-		return nil, ErrInvalidUsernameOrPassword
+		return nil, response.ErrInvalidUsernameOrPassword
 	}
 
 	// Log in the user

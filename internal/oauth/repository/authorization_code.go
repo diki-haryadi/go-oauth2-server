@@ -2,22 +2,15 @@ package oauthRepository
 
 import (
 	"database/sql"
-	"errors"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	oauthDto "github.com/diki-haryadi/go-micro-template/internal/oauth/dto"
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 	"time"
-)
-
-var (
-	// ErrAuthorizationCodeNotFound ...
-	ErrAuthorizationCodeNotFound = errors.New("Authorization code not found")
-	// ErrAuthorizationCodeExpired ...
-	ErrAuthorizationCodeExpired = errors.New("Authorization code expired")
 )
 
 // GrantAuthorizationCode grants a new authorization code using raw SQL
 func (rp *repository) GrantAuthorizationCode(client *oauthDomain.Client, user *oauthDomain.Users, expiresIn int, redirectURI, scope string) (*oauthDomain.AuthorizationCode, error) {
-	// Generate a new authorization code (e.g., random string or any other logic you have)
+	// Generate a new authorization code
 	authorizationCode := oauthDto.NewOauthAuthorizationCode(client, user, expiresIn, redirectURI, scope)
 
 	// Prepare the SQL INSERT query to insert the new authorization code into the database
@@ -59,19 +52,19 @@ func (rp *repository) GetValidAuthorizationCode(code, redirectURI string, client
 	err := row.Scan(&authorizationCode.ID, &authorizationCode.ClientID, &authorizationCode.UserID, &authorizationCode.Code, &authorizationCode.RedirectURI, &authorizationCode.ExpiresAt, &authorizationCode.Scope)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, ErrAuthorizationCodeNotFound
+			return nil, response.ErrAuthorizationCodeNotFound
 		}
 		return nil, err
 	}
 
 	// Check if the redirect URI matches
 	if redirectURI != authorizationCode.RedirectURI.String {
-		return nil, ErrInvalidRedirectURI
+		return nil, response.ErrInvalidRedirectURI
 	}
 
 	// Check if the authorization code has expired
 	if time.Now().After(authorizationCode.ExpiresAt) {
-		return nil, ErrAuthorizationCodeExpired
+		return nil, response.ErrAuthorizationCodeExpired
 	}
 
 	return authorizationCode, nil

@@ -26,3 +26,13 @@ const (
 	PgMaxLifeTimeConn = 1
 	PgSslMode         = "disable"
 )
+
+const (
+	AccessTokenHint  = "access_token"
+	RefreshTokenHint = "refresh_token"
+)
+
+const (
+	StorageSessionName = "go_oauth2_server_session"
+	UserSessionKey     = "go_oauth2_server_user"
+)

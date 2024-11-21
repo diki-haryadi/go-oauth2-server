@@ -3,23 +3,16 @@ package oauthRepository
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"github.com/diki-haryadi/go-micro-template/config"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 	"time"
-)
-
-var (
-	// ErrAccessTokenNotFound ...
-	ErrAccessTokenNotFound = errors.New("Access token not found")
-	// ErrAccessTokenExpired ...
-	ErrAccessTokenExpired = errors.New("Access token expired")
 )
 
 // Authenticate checks the access token is valid
 func (rp *repository) Authenticate(token string) (*oauthDomain.AccessToken, error) {
 	// 1. Fetch the access token from the database using a SELECT query
-	sqlQuery := "SELECT * FROM access_tokens WHERE token = $1"
+	sqlQuery := "SELECT id, token, client_id, user_id, expires_at FROM access_tokens WHERE token = $1"
 	row := rp.postgres.SqlxDB.QueryRow(sqlQuery, token)
 
 	// 2. Scan the results into an AccessToken object
@@ -27,14 +20,14 @@ func (rp *repository) Authenticate(token string) (*oauthDomain.AccessToken, erro
 	err := row.Scan(&accessToken.ID, &accessToken.Token, &accessToken.ClientID, &accessToken.UserID, &accessToken.ExpiresAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, ErrAccessTokenNotFound
+			return nil, response.ErrAccessTokenNotFound
 		}
 		return nil, err
 	}
 
 	// 3. Check if the access token has expired
 	if time.Now().UTC().After(accessToken.ExpiresAt) {
-		return nil, ErrAccessTokenExpired
+		return nil, response.ErrAccessTokenExpired
 	}
 
 	// 4. Extend the refresh token expiration

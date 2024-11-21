@@ -5,17 +5,10 @@ import (
 	"errors"
 	"github.com/diki-haryadi/go-micro-template/config"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
+	"github.com/diki-haryadi/go-micro-template/pkg/constant"
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 	"github.com/gorilla/sessions"
 	"net/http"
-)
-
-var (
-	// StorageSessionName ...
-	StorageSessionName = "go_oauth2_server_session"
-	// UserSessionKey ...
-	UserSessionKey = "go_oauth2_server_user"
-	// ErrSessonNotStarted ...
-	ErrSessonNotStarted = errors.New("Session not started")
 )
 
 type Service struct {
@@ -54,7 +47,7 @@ func (s *Service) SetSessionService(r *http.Request, w http.ResponseWriter) {
 // StartSession starts a new session. This method must be called before other
 // public methods of this struct as it sets the internal session object
 func (s *Service) StartSession() error {
-	session, err := s.sessionStore.Get(s.r, StorageSessionName)
+	session, err := s.sessionStore.Get(s.r, constant.StorageSessionName)
 	if err != nil {
 		return err
 	}
@@ -66,11 +59,11 @@ func (s *Service) StartSession() error {
 func (s *Service) GetUserSession() (*oauthDomain.UserSession, error) {
 	// Make sure StartSession has been called
 	if s.session == nil {
-		return nil, ErrSessonNotStarted
+		return nil, response.ErrSessonNotStarted
 	}
 
 	// Retrieve our user session struct and type-assert it
-	userSession, ok := s.session.Values[UserSessionKey].(*oauthDomain.UserSession)
+	userSession, ok := s.session.Values[constant.UserSessionKey].(*oauthDomain.UserSession)
 	if !ok {
 		return nil, errors.New("User session type assertion error")
 	}
@@ -82,11 +75,11 @@ func (s *Service) GetUserSession() (*oauthDomain.UserSession, error) {
 func (s *Service) SetUserSession(userSession *oauthDomain.UserSession) error {
 	// Make sure StartSession has been called
 	if s.session == nil {
-		return ErrSessonNotStarted
+		return response.ErrSessonNotStarted
 	}
 
 	// Set a new user session
-	s.session.Values[UserSessionKey] = userSession
+	s.session.Values[constant.UserSessionKey] = userSession
 	return s.session.Save(s.r, s.w)
 }
 
@@ -94,11 +87,11 @@ func (s *Service) SetUserSession(userSession *oauthDomain.UserSession) error {
 func (s *Service) ClearUserSession() error {
 	// Make sure StartSession has been called
 	if s.session == nil {
-		return ErrSessonNotStarted
+		return response.ErrSessonNotStarted
 	}
 
 	// Delete the user session
-	delete(s.session.Values, UserSessionKey)
+	delete(s.session.Values, constant.UserSessionKey)
 	return s.session.Save(s.r, s.w)
 }
 
@@ -107,7 +100,7 @@ func (s *Service) ClearUserSession() error {
 func (s *Service) SetFlashMessage(msg string) error {
 	// Make sure StartSession has been called
 	if s.session == nil {
-		return ErrSessonNotStarted
+		return response.ErrSessonNotStarted
 	}
 
 	// Add the flash message
@@ -119,7 +112,7 @@ func (s *Service) SetFlashMessage(msg string) error {
 func (s *Service) GetFlashMessage() (interface{}, error) {
 	// Make sure StartSession has been called
 	if s.session == nil {
-		return nil, ErrSessonNotStarted
+		return nil, response.ErrSessonNotStarted
 	}
 
 	// Get the last flash message from the stack

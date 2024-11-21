@@ -2,20 +2,11 @@ package oauthRepository
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	oauthDto "github.com/diki-haryadi/go-micro-template/internal/oauth/dto"
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 	"time"
-)
-
-var (
-	// ErrRefreshTokenNotFound ...
-	ErrRefreshTokenNotFound = errors.New("Refresh token not found")
-	// ErrRefreshTokenExpired ...
-	ErrRefreshTokenExpired = errors.New("Refresh token expired")
-	// ErrRequestedScopeCannotBeGreater ...
-	ErrRequestedScopeCannotBeGreater = errors.New("Requested scope cannot be greater")
 )
 
 // GetOrCreateRefreshToken retrieves an existing refresh token, if expired,
@@ -62,9 +53,8 @@ func (rp *repository) GetOrCreateRefreshToken(client *oauthDomain.Client, user *
 		sqlInsert := `
             INSERT INTO refresh_tokens (client_id, user_id, token, expires_at, scope)
             VALUES ($1, $2, $3, $4, $5)
-            RETURNING id, client_id, user_id, token, expires_at, scope
-        `
-
+            RETURNING id, client_id, user_id, token, expires_at, scope`
+		fmt.Println(refreshToken)
 		err = rp.postgres.SqlxDB.QueryRow(sqlInsert, refreshToken.ClientID, refreshToken.UserID, refreshToken.Token, refreshToken.ExpiresAt, refreshToken.Scope).
 			Scan(&refreshToken.ID, &refreshToken.ClientID, &refreshToken.UserID, &refreshToken.Token, &refreshToken.ExpiresAt, &refreshToken.Scope)
 
@@ -93,7 +83,7 @@ func (rp *repository) GetValidRefreshToken(token string, client *oauthDomain.Cli
 
 	// Not found
 	if err == sql.ErrNoRows {
-		return nil, ErrRefreshTokenNotFound
+		return nil, response.ErrRefreshTokenNotFound
 	}
 	if err != nil {
 		return nil, err
@@ -101,7 +91,7 @@ func (rp *repository) GetValidRefreshToken(token string, client *oauthDomain.Cli
 
 	// Check if the refresh token hasn't expired
 	if time.Now().UTC().After(refreshToken.ExpiresAt) {
-		return nil, ErrRefreshTokenExpired
+		return nil, response.ErrRefreshTokenExpired
 	}
 
 	return &refreshToken, nil

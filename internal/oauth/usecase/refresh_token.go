@@ -2,14 +2,9 @@ package oauthUseCase
 
 import (
 	"context"
-	"errors"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	"github.com/diki-haryadi/go-micro-template/pkg"
-)
-
-var (
-	// ErrRequestedScopeCannotBeGreater ...
-	ErrRequestedScopeCannotBeGreater = errors.New("Requested scope cannot be greater")
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 )
 
 // GetRefreshTokenScope returns scope for a new refresh token
@@ -29,7 +24,7 @@ func (uc *useCase) GetRefreshTokenScope(ctx context.Context, refreshToken *oauth
 
 	// Requested scope CANNOT include any scope not originally granted
 	if !pkg.SpaceDelimitedStringNotGreater(scope, refreshToken.Scope) {
-		return "", ErrRequestedScopeCannotBeGreater
+		return "", response.ErrRequestedScopeCannotBeGreater
 	}
 
 	return scope, nil

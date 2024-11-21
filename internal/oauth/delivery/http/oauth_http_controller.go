@@ -1,15 +1,12 @@
 package oauthHttpController
 
 import (
-	"errors"
-	oauthModel "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
-	"net/http"
-
-	"github.com/labstack/echo/v4"
-
+	"github.com/diki-haryadi/go-micro-template/config"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain"
+	oauthModel "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	oauthDto "github.com/diki-haryadi/go-micro-template/internal/oauth/dto"
-	oauthException "github.com/diki-haryadi/go-micro-template/internal/oauth/exception"
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
+	"github.com/labstack/echo/v4"
 )
 
 type controller struct {
@@ -23,11 +20,7 @@ func NewController(uc oauthDomain.UseCase) oauthDomain.HttpController {
 }
 
 func (c controller) Tokens(ctx echo.Context) error {
-	if err := ctx.Request().ParseForm(); err != nil {
-		//response.Error(w, err.Error(), http.StatusInternalServerError)
-		return err
-	}
-
+	res := response.NewJSONResponse()
 	grantTypes := map[string]func(ctx echo.Context) error{
 		"authorization_code": c.AuthorizationCodeGrant,
 		"password":           c.PasswordGrant,
@@ -36,36 +29,35 @@ func (c controller) Tokens(ctx echo.Context) error {
 	}
 
 	// Check the grant type
-	grantHandler, ok := grantTypes[ctx.Request().Form.Get("grant_type")]
+	grantHandler, ok := grantTypes[ctx.Request().FormValue("grant_type")]
 	if !ok {
-		//response.Error(w, ErrInvalidGrantType.Error(), http.StatusBadRequest)
-		return errors.New("invalid grant type")
+		res.SetError(response.ErrInvalidGrantType).SetMessage(response.ErrInvalidGrantType.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
 	// Grant processing
 	err := grantHandler(ctx)
 	if err != nil {
-		//response.Error(w, err.Error(), getErrStatusCode(err))
-		return err
+		res.SetError(response.ErrBadRequest).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
-	return ctx.JSON(http.StatusOK, nil)
+	return nil
 }
 
 func (c controller) AuthorizationCodeGrant(ctx echo.Context) error {
-	aDto := new(oauthDto.GrantAuthorizationCodeRequestDto)
-	if err := ctx.Bind(aDto); err != nil {
-		return oauthException.AuthorizationCodeGrantBindingExc()
-	}
+	res := response.NewJSONResponse()
 
+	aDto := new(oauthDto.AuthorizationCodeGrantRequestDto).GetFields(ctx)
 	if err := aDto.ValidateAuthorizationCodeDto(); err != nil {
-		return oauthException.AuthorizationCodeGrantValidationExc(err)
+		res.SetError(response.ErrInvalidAuthorizationCodeGrantRequest).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
 	client, err := c.BasicAuthClient(ctx)
 	if err != nil {
-		//response.UnauthorizedError(w, err.Error())
-		return err // crate error 401
+		res.SetError(err).Send(ctx.Response().Writer)
+		return nil
 	}
 
 	acGrant, err := c.useCase.AuthorizationCodeGrant(
@@ -75,26 +67,26 @@ func (c controller) AuthorizationCodeGrant(ctx echo.Context) error {
 		aDto.ToModel(client.ID))
 
 	if err != nil {
-		return err
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
-	return ctx.JSON(http.StatusOK, acGrant)
+	res.APIStatusSuccess().SetData(acGrant).Send(ctx.Response().Writer)
+	return nil
 }
 
 func (c controller) PasswordGrant(ctx echo.Context) error {
-	aDto := new(oauthDto.GrantPasswordRequestDto)
-	if err := ctx.Bind(aDto); err != nil {
-		return oauthException.PasswordGrantBindingExc()
-	}
-
+	res := response.NewJSONResponse()
+	aDto := new(oauthDto.PasswordGrantRequestDto).GetFields(ctx)
 	if err := aDto.ValidatePasswordDto(); err != nil {
-		return oauthException.PasswordGrantValidationExc(err)
+		res.SetError(response.ErrInvalidPasswordGrantRequest).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
 	client, err := c.BasicAuthClient(ctx)
 	if err != nil {
-		//response.UnauthorizedError(w, err.Error())
-		return err // crate error 401
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
 	acGrant, err := c.useCase.PasswordGrant(
@@ -105,109 +97,113 @@ func (c controller) PasswordGrant(ctx echo.Context) error {
 		aDto.ToModel(client.ID))
 
 	if err != nil {
-		return err
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
-	return ctx.JSON(http.StatusOK, acGrant)
+	res.APIStatusSuccess().SetData(acGrant).Send(ctx.Response().Writer)
+	return nil
 }
 
 func (c controller) ClientCredentialsGrant(ctx echo.Context) error {
-	aDto := new(oauthDto.GrantClientCredentialsRequestDto)
-	if err := ctx.Bind(aDto); err != nil {
-		return oauthException.GrantClientCredentialGrantBindingExc()
-	}
-
+	res := response.NewJSONResponse()
+	aDto := new(oauthDto.ClientCredentialsGrantRequestDto).GetFields(ctx)
 	if err := aDto.ValidateClientCredentialsDto(); err != nil {
-		return oauthException.AuthorizationCodeGrantValidationExc(err)
+		res.SetError(response.ErrInvalidClientCredentialsGrantRequest).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
 	client, err := c.BasicAuthClient(ctx)
 	if err != nil {
-		//response.UnauthorizedError(w, err.Error())
-		return err // crate error 401
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
-	acGrant, err := c.useCase.ClientCredentialsGrant(
+	acGrant, err := c.useCase.GrantAccessToken(
 		ctx.Request().Context(),
-		aDto.Scope,
-		aDto.ToModel(client.ID))
+		client,
+		nil,
+		config.BaseConfig.App.ConfigOauth.Oauth.AccessTokenLifetime,
+		aDto.Scope)
 
 	if err != nil {
-		return err
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
-	return ctx.JSON(http.StatusOK, acGrant)
+	res.APIStatusSuccess().SetData(acGrant).Send(ctx.Response().Writer)
+	return nil
 }
 
 func (c controller) RefreshTokenGrant(ctx echo.Context) error {
-	aDto := new(oauthDto.RefreshTokenRequestDto)
-	if err := ctx.Bind(aDto); err != nil {
-		return oauthException.RefreshTokenGrantBindingExc()
-	}
-
+	res := response.NewJSONResponse()
+	aDto := new(oauthDto.RefreshTokenRequestDto).GetFields(ctx)
 	if err := aDto.ValidateRefreshTokenDto(); err != nil {
-		return oauthException.RefreshTokenGrantValidationExc(err)
+		res.SetError(response.ErrInvalidClientCredentialsGrantRequest).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
 	client, err := c.BasicAuthClient(ctx)
 	if err != nil {
-		//response.UnauthorizedError(w, err.Error())
-		return err // crate error 401
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
 	acGrant, err := c.useCase.ClientCredentialsGrant(
 		ctx.Request().Context(),
+		aDto.RefreshToken,
 		aDto.Scope,
 		aDto.ToModel(client.ID))
 
 	if err != nil {
-		return err
+		res.SetError(err).SetMessage(err.Error()).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
-	return ctx.JSON(http.StatusOK, acGrant)
+	res.APIStatusSuccess().SetData(acGrant).Send(ctx.Response().Writer)
+	return nil
 }
 
 func (c controller) Introspect(ctx echo.Context) error {
-	aDto := new(oauthDto.IntrospectRequestDto)
-	if err := ctx.Bind(aDto); err != nil {
-		return oauthException.IntrospectBindingExc()
-	}
-
+	res := response.NewJSONResponse()
+	aDto := new(oauthDto.IntrospectRequestDto).GetFields(ctx)
 	if err := aDto.ValidateIntrospectDto(); err != nil {
-		return oauthException.IntrospectValidationExc(err)
+		res.SetError(response.ErrInvalidIntrospectRequest).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
 	client, err := c.BasicAuthClient(ctx)
 	if err != nil {
-		//response.UnauthorizedError(w, err.Error())
-		return err // crate error 401
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
-	article, err := c.useCase.IntrospectToken(
+	introspect, err := c.useCase.IntrospectToken(
 		ctx.Request().Context(),
 		aDto.Token,
 		aDto.TokenTypeHint,
 		aDto.ToModel(client.ID))
 
 	if err != nil {
-		return err
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
 	}
 
-	return ctx.JSON(http.StatusOK, article)
+	res.APIStatusSuccess().SetData(introspect).Send(ctx.Response().Writer)
+	return nil
 }
 
 func (c controller) BasicAuthClient(ctx echo.Context) (*oauthModel.Client, error) {
 	// Get client credentials from basic auth
 	clientID, secret, ok := ctx.Request().BasicAuth()
 	if !ok {
-		return nil, errors.New("Invalid client ID or secret")
+		return nil, response.ErrInvalidClientIDOrSecret
 	}
 
 	// Authenticate the client
 	client, err := c.useCase.AuthClient(ctx.Request().Context(), clientID, secret)
 	if err != nil {
-		// For security reasons, return a general error message
-		return nil, errors.New("Invalid client ID or secret")
+		return nil, response.ErrInvalidClientIDOrSecret
 	}
 
 	return client, nil

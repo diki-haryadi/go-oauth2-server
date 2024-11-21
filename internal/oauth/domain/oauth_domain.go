@@ -24,17 +24,18 @@ type UseCase interface {
 	AuthClient(ctx context.Context, clientID, secret string) (*model.Client, error)
 	CreateClient(ctx context.Context, clientID, secret, redirectURI string) (*model.Client, error)
 	ClientExists(ctx context.Context, clientID string) bool
-	ClientCredentialsGrant(ctx context.Context, scope string, client *model.Client) (*oauthDto.AccessTokenResponse, error)
+	ClientCredentialsGrant(ctx context.Context, scope string, refreshToken string, client *model.Client) (*oauthDto.AccessTokenResponse, error)
 	AuthorizationCodeGrant(ctx context.Context, code, redirectURI string, client *model.Client) (*oauthDto.AccessTokenResponse, error)
 	PasswordGrant(ctx context.Context, username, password string, scope string, client *model.Client) (*oauthDto.AccessTokenResponse, error)
 	RefreshTokenGrant(ctx context.Context, token, scope string, client *model.Client) (*oauthDto.AccessTokenResponse, error)
 	IntrospectToken(ctx context.Context, token, tokenTypeHint string, client *model.Client) (*oauthDto.IntrospectResponse, error)
 	Login(ctx context.Context, client *model.Client, user *model.Users, scope string) (*model.AccessToken, *model.RefreshToken, error)
 	GetRefreshTokenScope(ctx context.Context, refreshToken *model.RefreshToken, requestedScope string) (string, error)
+	GrantAccessToken(ctx context.Context, client *model.Client, user *model.Users, expiresIn int, scope string) (*model.AccessToken, error)
 }
 
 type Repository interface {
-	GrantAccessToken(client *model.Client, user *model.Users, expiresIn int, scope string) (*model.AccessToken, error)
+	GrantAccessToken(ctx context.Context, client *model.Client, user *model.Users, expiresIn int, scope string) (*model.AccessToken, error)
 	Authenticate(token string) (*model.AccessToken, error)
 	GrantAuthorizationCode(client *model.Client, user *model.Users, expiresIn int, redirectURI, scope string) (*model.AuthorizationCode, error)
 	GetValidAuthorizationCode(code, redirectURI string, client *model.Client) (*model.AuthorizationCode, error)

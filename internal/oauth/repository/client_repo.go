@@ -3,21 +3,12 @@ package oauthRepository
 import (
 	"context"
 	"database/sql"
-	"errors"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	"github.com/diki-haryadi/go-micro-template/pkg"
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 	"github.com/google/uuid"
 	"strings"
 	"time"
-)
-
-var (
-	// ErrClientNotFound ...
-	ErrClientNotFound = errors.New("Client not found")
-	// ErrInvalidClientSecret ...
-	ErrInvalidClientSecret = errors.New("Invalid client secret")
-	// ErrClientIDTaken ...
-	ErrClientIDTaken = errors.New("Client ID taken")
 )
 
 func (rp *repository) CreateClientCommon(ctx context.Context, clientID, secret, redirectURI string) (*oauthDomain.Client, error) {
@@ -26,7 +17,7 @@ func (rp *repository) CreateClientCommon(ctx context.Context, clientID, secret, 
 	sqlCheck := `SELECT id FROM clients WHERE client_id = $1`
 	err := rp.postgres.SqlxDB.Get(&existingClient, sqlCheck, clientID)
 	if err == nil {
-		return nil, ErrClientIDTaken // Client ID is already taken
+		return nil, response.ErrClientIDTaken // Client ID is already taken
 	}
 	if err != sql.ErrNoRows {
 		return nil, err // Other errors
@@ -67,12 +58,15 @@ func (rp *repository) CreateClientCommon(ctx context.Context, clientID, secret, 
 }
 
 func (rp *repository) FindClientByClientID(ctx context.Context, clientID string) (*oauthDomain.Client, error) {
-	client := new(oauthDomain.Client)
-	query := "SELECT * FROM clients WHERE key = ?"
-	err := rp.postgres.SqlxDB.Select(&client, query, strings.ToLower(clientID))
+	client := oauthDomain.Client{}
+	query := "SELECT * FROM clients WHERE key = $1"
+	err := rp.postgres.SqlxDB.Get(&client, query, strings.ToLower(clientID))
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, response.ErrClientNotFound
+		}
 		return nil, err
 	}
 
-	return client, err
+	return &client, err
 }

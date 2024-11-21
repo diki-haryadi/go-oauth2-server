@@ -3,13 +3,8 @@ package oauthRepository
 import (
 	"context"
 	"database/sql"
-	"errors"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
-)
-
-var (
-	// ErrInvalidRedirectURI ...
-	ErrInvalidRedirectURI = errors.New("Invalid redirect URI")
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 )
 
 // FetchAuthorizationCodeByCode retrieves the authorization code from the database using raw SQL
@@ -34,7 +29,7 @@ func (rp *repository) FetchAuthorizationCodeByCode(ctx context.Context, client *
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, ErrAuthorizationCodeNotFound
+			return nil, response.ErrAuthorizationCodeNotFound
 		}
 		return nil, err
 	}

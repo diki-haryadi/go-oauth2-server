@@ -1,0 +1,45 @@
+### Oauth Introspect
+POST http://localhost:4000/api/v1/oauth/introspect
+Authorization: Basic dGVzdF9jbGllbnRfMTp0ZXN0X3NlY3JldA==
+Content-Type: application/x-www-form-urlencoded
+
+token = 00ccd40e-72ca-4e79-a4b6-67c95e2e3f1c &
+token_type_hint = access_token
+
+### Oauth Refresh Tokens
+POST http://localhost:4000/api/v1/oauth/tokens
+Authorization: Basic dGVzdF9jbGllbnRfMTp0ZXN0X3NlY3JldA==
+Content-Type: application/x-www-form-urlencoded
+
+grant_type = refresh_token &
+refresh_token = 6fd8d272-375a-4d8a-8d0f-43367dc8b791
+
+### Oauth Client Credentials
+POST http://localhost:4000/api/v1/oauth/tokens
+Authorization: Basic dGVzdF9jbGllbnRfMTp0ZXN0X3NlY3JldA==
+Content-Type: application/x-www-form-urlencoded
+
+grant_type = client_credentials &
+scope = read_write
+
+### Oauth Password
+###
+POST http://localhost:4000/api/v1/oauth/tokens
+Authorization: Basic dGVzdF9jbGllbnRfMTp0ZXN0X3NlY3JldA==
+Content-Type: application/x-www-form-urlencoded
+
+grant_type = password &
+username = test@user &
+password = test_password &
+scope = read_write
+
+### Oauth Authorization Code
+POST http://localhost:4000/api/v1/oauth/tokens
+Authorization: Basic dGVzdF9jbGllbnRfMTp0ZXN0X3NlY3JldA==
+Content-Type: application/x-www-form-urlencoded
+
+grant_type = authorization_code &
+code = 7afb1c55-76e4-4c76-adb7-9d657cb47a27 &
+redirect_uri = https://www.example.com
+
+###

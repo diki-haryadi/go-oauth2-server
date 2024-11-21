@@ -1,14 +1,9 @@
 package oauthUseCase
 
 import (
-	"errors"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	"github.com/diki-haryadi/go-micro-template/pkg"
-)
-
-var (
-	// ErrCannotSetEmptyUsername ...
-	ErrCannotSetEmptyUsername = errors.New("Cannot set empty username")
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 )
 
 // UserExists returns true if user exists
@@ -55,13 +50,18 @@ func (uc *useCase) AuthUser(username, password string) (*oauthDomain.Users, erro
 		return nil, err
 	}
 
+	role, err := uc.repository.FindRoleByID(user.RoleID.String)
+	if err != nil {
+		return nil, err
+	}
+	user.Role = role
 	return user, nil
 }
 
 // UpdateUsername ...
 func (uc *useCase) UpdateUsername(user *oauthDomain.Users, username string) error {
 	if username == "" {
-		return ErrCannotSetEmptyUsername
+		return response.ErrCannotSetEmptyUsername
 	}
 
 	return uc.repository.UpdateUsernameCommon(user, username)

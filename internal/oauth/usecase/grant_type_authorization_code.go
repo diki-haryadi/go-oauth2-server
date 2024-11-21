@@ -2,25 +2,17 @@ package oauthUseCase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/diki-haryadi/go-micro-template/config"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	oauthDto "github.com/diki-haryadi/go-micro-template/internal/oauth/dto"
 	"github.com/diki-haryadi/go-micro-template/pkg"
+	"github.com/diki-haryadi/go-micro-template/pkg/response"
 	"time"
-)
-
-var (
-	// ErrAuthorizationCodeExpired ...
-	ErrAuthorizationCodeExpired = errors.New("Authorization code expired")
-	// ErrInvalidRedirectURI ...
-	ErrInvalidRedirectURI = errors.New("Invalid redirect URI")
 )
 
 func (uc *useCase) AuthorizationCodeGrant(ctx context.Context, code, redirectURI string, client *oauthDomain.Client) (*oauthDto.AccessTokenResponse, error) {
 	// 1. Fetch the authorization code from the database
-
 	authorizationCode, err := uc.repository.FetchAuthorizationCodeByCode(ctx, client, code)
 	if err != nil {
 		return nil, err
@@ -28,12 +20,12 @@ func (uc *useCase) AuthorizationCodeGrant(ctx context.Context, code, redirectURI
 
 	// 2. Check if redirect URI matches
 	if redirectURI != authorizationCode.RedirectURI.String {
-		return nil, ErrInvalidRedirectURI
+		return nil, response.ErrInvalidRedirectURI
 	}
 
 	// 3. Check if the authorization code has expired
 	if time.Now().After(authorizationCode.ExpiresAt) {
-		return nil, ErrAuthorizationCodeExpired
+		return nil, response.ErrAuthorizationCodeExpired
 	}
 
 	// 4. Log in the user

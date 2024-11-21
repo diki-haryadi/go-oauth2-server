@@ -1,6 +1,9 @@
 package oauthUseCase
 
-import "errors"
+import (
+	"errors"
+	"strings"
+)
 
 const (
 	// Superuser ...
@@ -39,7 +42,7 @@ func (uc *useCase) RestrictToRoles(allowedRoles ...string) {
 // IsRoleAllowed returns true if the role is allowed to use this service
 func (uc *useCase) IsRoleAllowed(role string) bool {
 	for _, allowedRole := range uc.allowedRoles {
-		if role == allowedRole {
+		if strings.ToLower(role) == allowedRole {
 			return true
 		}
 	}
