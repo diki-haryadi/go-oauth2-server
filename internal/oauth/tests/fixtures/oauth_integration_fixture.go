@@ -36,7 +36,10 @@ func NewIntegrationTestFixture() (*IntegrationTestFixture, error) {
 	deadline := time.Now().Add(time.Duration(math.MaxInt64))
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
 
-	ic, infraDown, err := iContainer.NewIC(ctx)
+	container := iContainer.IContainer{}
+	ic, infraDown, err := container.IContext(ctx).
+		ICDown().ICPostgres().ICGrpc().ICEcho().
+		ICKafka().NewIC()
 	if err != nil {
 		cancel()
 		return nil, err

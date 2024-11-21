@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/davecgh/go-spew/spew"
-	"github.com/diki-haryadi/ztools/constant"
 	"github.com/joho/godotenv"
 	"github.com/kelseyhightower/envconfig"
 	"log"
@@ -11,13 +10,7 @@ import (
 )
 
 type Config struct {
-	App              AppConfig
-	Grpc             GrpcConfig
-	Http             HttpConfig
-	Postgres         PostgresConfig
-	SampleExtService GrpcConfig
-	Kafka            KafkaConfig
-	Sentry           SentryConfig
+	App AppConfig
 }
 
 var BaseConfig *Config
@@ -56,45 +49,6 @@ type SessionConfig struct {
 	HTTPOnly bool `json:"http_only" envconfig:"SESSION_HTTP_ONLY"`
 }
 
-type PostgresConfig struct {
-	Host            string `json:"host" envconfig:"PG_HOST"`
-	Port            string `json:"port" envconfig:"PG_PORT"`
-	User            string `json:"user" envconfig:"PG_USER"`
-	Pass            string `json:"pass" envconfig:"PG_PASS"`
-	DBName          string `json:"db_name" envconfig:"PG_DB"`
-	MaxConn         int    `json:"max_conn" envconfig:"PG_MAX_CONNECTIONS"`
-	MaxIdleConn     int    `json:"max_idle_conn" envconfig:"PG_MAX_IDLE_CONNECTIONS"`
-	MaxLifeTimeConn int    `json:"max_life_time_conn" envconfig:"PG_MAX_LIFETIME_CONNECTIONS"`
-	SslMode         string `json:"ssl_mode" envconfig:"PG_SSL_MODE"`
-}
-type GrpcConfig struct {
-	Port int    `json:"port" envconfig:"GRPC_PORT"`
-	Host string `json:"host" envconfig:"GRPC_HOST" `
-}
-
-type HttpConfig struct {
-	Port int    `json:"port" envconfig:"HTTP_PORT"`
-	Host string `json:"host" envconfig:"HTTP_HOST"`
-}
-
-type KafkaConfig struct {
-	Enabled       bool     `json:"enabled" envconfig:"KAFKA_ENABLED"`
-	LogEvents     bool     `json:"log_events" envconfig:"KAFKA_LOG_EVENTS"`
-	ClientId      string   `json:"client_id" envconfig:"KAFKA_CLIENT_ID"`
-	ClientGroupId string   `json:"client_group_id" envconfig:"KAFKA_CLIENT_GROUP_ID"`
-	ClientBrokers []string `json:"client_brokers" envconfig:"KAFKA_CLIENT_BROKERS"`
-	Topic         string   `json:"topic" envconfig:"KAFKA_TOPIC"`
-}
-
-type SentryConfig struct {
-	Dsn string `json:"dsn" envconfig:"SENTRY_DSN"`
-}
-
-func init() {
-	//BaseConfig = newConfig()
-	//BaseConfig = LoadConfig()
-}
-
 func LoadConfig() *Config {
 	_, callerDir, _, ok := runtime.Caller(0)
 	if !ok {
@@ -115,16 +69,4 @@ func LoadConfig() *Config {
 	BaseConfig = &configLoader
 	spew.Dump(configLoader)
 	return &configLoader
-}
-
-func IsDevEnv() bool {
-	return BaseConfig.App.AppEnv == constant.AppEnvDev
-}
-
-func IsProdEnv() bool {
-	return BaseConfig.App.AppEnv == constant.AppEnvProd
-}
-
-func IsTestEnv() bool {
-	return BaseConfig.App.AppEnv == constant.AppEnvTest
 }

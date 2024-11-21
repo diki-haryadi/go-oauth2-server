@@ -27,7 +27,7 @@ func servePreRun(cmd *cobra.Command, args []string) {
 }
 
 func runServe(cmd *cobra.Command, args []string) error {
-	err := app.New().Run()
+	err := app.New().Init().Run()
 	if err != nil {
 		fmt.Println(err)
 		logger.Zap.Sugar().Fatal(err)
