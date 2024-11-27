@@ -71,7 +71,7 @@ func (c controller) AuthorizationCodeGrant(ctx echo.Context) error {
 		return nil
 	}
 
-	res.APIStatusSuccess().SetData(acGrant).Send(ctx.Response().Writer)
+	res.APIStatusSuccess().SetData(*acGrant).Send(ctx.Response().Writer)
 	return nil
 }
 
@@ -101,7 +101,7 @@ func (c controller) PasswordGrant(ctx echo.Context) error {
 		return nil
 	}
 
-	res.APIStatusSuccess().SetData(acGrant).Send(ctx.Response().Writer)
+	res.APIStatusSuccess().SetData(*acGrant).Send(ctx.Response().Writer)
 	return nil
 }
 
@@ -131,7 +131,7 @@ func (c controller) ClientCredentialsGrant(ctx echo.Context) error {
 		return nil
 	}
 
-	res.APIStatusSuccess().SetData(acGrant).Send(ctx.Response().Writer)
+	res.APIStatusSuccess().SetData(&acGrant).Send(ctx.Response().Writer)
 	return nil
 }
 
@@ -160,7 +160,7 @@ func (c controller) RefreshTokenGrant(ctx echo.Context) error {
 		return nil
 	}
 
-	res.APIStatusSuccess().SetData(acGrant).Send(ctx.Response().Writer)
+	res.APIStatusSuccess().SetData(*acGrant).Send(ctx.Response().Writer)
 	return nil
 }
 
@@ -189,7 +189,7 @@ func (c controller) Introspect(ctx echo.Context) error {
 		return nil
 	}
 
-	res.APIStatusSuccess().SetData(introspect).Send(ctx.Response().Writer)
+	res.APIStatusSuccess().SetData(*introspect).Send(ctx.Response().Writer)
 	return nil
 }
 

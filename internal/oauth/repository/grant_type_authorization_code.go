@@ -5,16 +5,23 @@ import (
 	"database/sql"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	"github.com/diki-haryadi/go-micro-template/pkg/response"
+	"github.com/google/uuid"
 )
 
 // FetchAuthorizationCodeByCode retrieves the authorization code from the database using raw SQL
 func (rp *repository) FetchAuthorizationCodeByCode(ctx context.Context, client *oauthDomain.Client, code string) (*oauthDomain.AuthorizationCode, error) {
 	sqlQuery := `
-        SELECT id, client_id, user_id, code, redirect_uri, expires_at, scope
-        FROM authorization_codes
-        WHERE client_id = $1 AND code = $2
-    `
+        SELECT ac.id, ac.client_id, ac.user_id, ac.code, ac.redirect_uri, ac.expires_at, ac.scope, r.name AS role_name
+		FROM authorization_codes ac
+		JOIN users u ON ac.user_id::UUID = u.id
+		JOIN roles r ON u.role_id::UUID = r.id
+        WHERE client_id = $1 AND code = $2`
+
 	var authorizationCode oauthDomain.AuthorizationCode
+	var user oauthDomain.Users
+	var role oauthDomain.Role
+	var cl oauthDomain.Client
+
 	row := rp.postgres.SqlxDB.QueryRow(sqlQuery, client.ID, code)
 
 	// Scan the result into the authorizationCode struct
@@ -26,6 +33,7 @@ func (rp *repository) FetchAuthorizationCodeByCode(ctx context.Context, client *
 		&authorizationCode.RedirectURI,
 		&authorizationCode.ExpiresAt,
 		&authorizationCode.Scope,
+		&role.Name,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -33,6 +41,14 @@ func (rp *repository) FetchAuthorizationCodeByCode(ctx context.Context, client *
 		}
 		return nil, err
 	}
+
+	cl.ID = client.ID
+	u, _ := uuid.Parse(authorizationCode.UserID.String)
+	user.ID = u
+	user.Role = &role
+
+	authorizationCode.User = &user
+	authorizationCode.Client = &cl
 
 	return &authorizationCode, nil
 }

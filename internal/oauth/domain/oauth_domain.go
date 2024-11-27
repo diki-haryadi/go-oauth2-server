@@ -31,7 +31,7 @@ type UseCase interface {
 	IntrospectToken(ctx context.Context, token, tokenTypeHint string, client *model.Client) (*oauthDto.IntrospectResponse, error)
 	Login(ctx context.Context, client *model.Client, user *model.Users, scope string) (*model.AccessToken, *model.RefreshToken, error)
 	GetRefreshTokenScope(ctx context.Context, refreshToken *model.RefreshToken, requestedScope string) (string, error)
-	GrantAccessToken(ctx context.Context, client *model.Client, user *model.Users, expiresIn int, scope string) (*model.AccessToken, error)
+	GrantAccessToken(ctx context.Context, client *model.Client, user *model.Users, expiresIn int, scope string) (*oauthDto.AccessTokenResponse, error)
 }
 
 type Repository interface {
