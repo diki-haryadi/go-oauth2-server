@@ -1,0 +1,131 @@
+### Manajemen Client (Client Management)
+## Register Client Baru
+POST /api/v1/oauth/clients
+Content-Type: application/json
+{
+    "name": "My Application",
+    "redirect_uris": ["https://app.example.com/callback"],
+    "grant_types": ["authorization_code", "refresh_token"],
+    "scope": "read write",
+    "confidential": true
+}
+
+### Mendapatkan Daftar Client
+GET /api/v1/oauth/clients
+
+### Update Client
+PUT /api/v1/oauth/clients/{client_id}
+
+### Hapus Client
+DELETE /api/v1/oauth/clients/{client_id}
+
+### Manajemen User (User Management)
+### Register User Baru
+POST /api/v1/users
+{
+    "username": "john.doe@example.com",
+    "password": "secure_password",
+    "name": "John Doe",
+    "roles": ["user"]
+}
+
+### Update Profile User
+PUT /api/v1/users/profile
+
+### Reset Password
+POST /api/v1/users/reset-password
+
+### Verifikasi Email
+POST /api/v1/users/verify-email
+
+### Manajemen User (Admin)
+GET /api/v1/users
+###
+PUT /api/v1/users/{user_id}
+###
+DELETE /api/v1/users/{user_id}
+###
+
+### Manajemen Scope (Scope Management)
+# Buat Scope Baru
+POST /api/v1/oauth/scopes
+{
+    "name": "read_profile",
+    "description": "Read user profile information"
+}
+
+### Daftar Scope
+GET /api/v1/oauth/scopes
+
+### Update Scope
+PUT /api/v1/oauth/scopes/{scope_id}
+
+### Hapus Scope
+DELETE /api/v1/oauth/scopes/{scope_id}
+
+### Manajemen Token (Token Management)
+# Daftar Active Tokens
+GET /api/v1/oauth/tokens
+
+### Revoke Token
+POST /api/v1/oauth/tokens/revoke
+{
+    "token": "access_token_value",
+    "token_type_hint": "access_token"
+}
+
+### Bulk Revoke Tokens (untuk user tertentu atau client)
+POST /api/v1/oauth/tokens/bulk-revoke
+{
+    "user_id": "user_id",
+    "client_id": "client_id"
+}
+
+### Consent Management
+# User Consent untuk Client
+POST /api/v1/oauth/consents
+{
+    "client_id": "client_id",
+    "scopes": ["read", "write"]
+}
+
+### Daftar User Consents
+GET /api/v1/oauth/consents
+
+### Hapus Consent
+DELETE /api/v1/oauth/consents/{consent_id}
+
+#### Security & Monitoring
+# Audit Log
+GET /api/v1/audit-logs
+
+### Rate Limiting Status
+GET /api/v1/oauth/rate-limits
+
+### Active Sessions
+GET /api/v1/oauth/sessions
+###
+DELETE /api/v1/oauth/sessions/{session_id}
+
+#Database Schema yang diperlukan:
+
+#users - Menyimpan informasi user
+#clients - Menyimpan informasi OAuth clients
+#access_tokens - Menyimpan access tokens
+#refresh_tokens - Menyimpan refresh tokens
+#authorization_codes - Menyimpan authorization codes
+#scopes - Menyimpan available scopes
+#client_scopes - Relasi many-to-many client dan scopes
+#user_consents - Menyimpan user consents untuk clients
+#audit_logs - Menyimpan audit trail
+
+#Fitur Keamanan yang perlu diimplementasikan:
+#
+#Rate Limiting
+#Token Encryption
+#Password Hashing
+#IP Whitelisting
+#CORS Configuration
+#Request Validation
+#Audit Logging
+#Session Management
