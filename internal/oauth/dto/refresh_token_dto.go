@@ -2,9 +2,11 @@ package oauthDto
 
 import (
 	"fmt"
+	"github.com/diki-haryadi/go-micro-template/config"
 	oauthModel "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	"github.com/diki-haryadi/go-micro-template/pkg"
 	validator "github.com/go-ozzo/ozzo-validation"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"time"
@@ -49,19 +51,42 @@ func (caDto *RefreshTokenRequestDto) ValidateRefreshTokenDto() error {
 	)
 }
 
-func NewOauthRefreshToken(client *oauthModel.Client, user *oauthModel.Users, expiresIn int, scope string) *oauthModel.RefreshToken {
+func NewOauthRefreshToken(client *oauthModel.Client, user *oauthModel.Users, expiresIn int, scope string) (*oauthModel.RefreshToken, error) {
+	tokenID := uuid.New()
+	claims := TokenClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        tokenID.String(),
+			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
+			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Duration(expiresIn) * time.Second)),
+		},
+		ClientID:  fmt.Sprint(client.ID),
+		Scope:     scope,
+		TokenType: "refresh_token",
+	}
+
+	if user != nil {
+		claims.UserID = fmt.Sprint(user.ID)
+	}
+
+	token, err := generateJWTToken(claims, config.BaseConfig.App.ConfigOauth.JWTSecret)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate refresh token: %w", err)
+	}
+
 	refreshToken := &oauthModel.RefreshToken{
 		Common: oauthModel.Common{
-			ID:        uuid.New(),
+			ID:        tokenID,
 			CreatedAt: time.Now().UTC(),
 		},
 		ClientID:  pkg.StringOrNull(fmt.Sprint(client.ID)),
-		Token:     uuid.New().String(),
+		Token:     token,
 		ExpiresAt: time.Now().UTC().Add(time.Duration(expiresIn) * time.Second),
 		Scope:     scope,
 	}
+
 	if user != nil {
 		refreshToken.UserID = pkg.StringOrNull(fmt.Sprint(user.ID))
 	}
-	return refreshToken
+
+	return refreshToken, nil
 }

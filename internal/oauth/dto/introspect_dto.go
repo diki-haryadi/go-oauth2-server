@@ -48,4 +48,7 @@ type IntrospectResponse struct {
 	Username  string `json:"username,omitempty"`
 	TokenType string `json:"token_type,omitempty"`
 	ExpiresAt int    `json:"exp,omitempty"`
+	IssuedAt  int    `json:"iat,omitempty"`
+	Sub       string `json:"sub,omitempty"`
+	JTI       string `json:"jti,omitempty"`
 }

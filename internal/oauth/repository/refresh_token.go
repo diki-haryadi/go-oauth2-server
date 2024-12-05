@@ -48,7 +48,10 @@ func (rp *repository) GetOrCreateRefreshToken(client *oauthDomain.Client, user *
 		}
 
 		// Create a new refresh token if it expired or was not found
-		refreshToken = *oauthDto.NewOauthRefreshToken(client, user, expiresIn, scope)
+		refreshTokenNew, err := oauthDto.NewOauthRefreshToken(client, user, expiresIn, scope)
+		if err != nil {
+			return nil, err
+		}
 
 		sqlInsert := `
             INSERT INTO refresh_tokens (client_id, user_id, token, expires_at, scope)
@@ -61,6 +64,7 @@ func (rp *repository) GetOrCreateRefreshToken(client *oauthDomain.Client, user *
 		if err != nil {
 			return nil, err
 		}
+		return refreshTokenNew, nil
 	}
 
 	return &refreshToken, nil

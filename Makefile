@@ -117,6 +117,10 @@ migrate-force: ### force
 compose-up: ## docker-compose up
 	docker-compose -f deployments/docker-compose.yaml up -d
 
+.PHONY: seed
+seed: ## docker-compose up
+	go run main.go load_data
+
 ## ---------- Help ----------
 .PHONY: help
 help: ## Show this help.

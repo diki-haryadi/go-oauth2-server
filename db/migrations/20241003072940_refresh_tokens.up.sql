@@ -4,7 +4,7 @@ CREATE TABLE refresh_tokens (
     "id" uuid DEFAULT uuid_generate_v4() PRIMARY KEY,
     "client_id" UUID NOT NULL,  -- Assuming client_id is a UUID
     "user_id" UUID NOT NULL,     -- Assuming user_id is a UUID
-    "token" VARCHAR(300) NOT NULL,  -- Increased length for token
+    "token" TEXT NOT NULL,  -- Increased length for token
     "expires_at" TIMESTAMP WITH TIME ZONE DEFAULT NULL,  -- Expiration timestamp
     "scope" VARCHAR(50) NOT NULL,  -- Consider if this should be unique
     "created_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

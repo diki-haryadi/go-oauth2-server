@@ -42,8 +42,12 @@ func (rp *repository) GrantAccessToken(ctx context.Context, client *oauthDomain.
 
 	// Create a new access token
 	expiresAt := time.Now().Add(time.Duration(expiresIn) * time.Second)
-	accessToken := oauthDto.NewOauthAccessToken(client, user, expiresIn, scope)
-
+	accessToken, err := oauthDto.NewOauthAccessToken(client, user, expiresIn, scope)
+	if err != nil {
+		_ = tx.Rollback()
+		return nil, err
+	}
+	
 	var sqlQueryAT string
 	var insertArgs []interface{}
 

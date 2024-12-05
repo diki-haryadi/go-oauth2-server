@@ -26,6 +26,7 @@ type ConfigOauth struct {
 	Oauth         OauthConfig
 	Session       SessionConfig
 	IsDevelopment bool
+	JWTSecret     string `json:"jwt_secret" envconfig:"JWT_SECRET"`
 }
 
 // OauthConfig stores oauth service configuration options
