@@ -10,7 +10,7 @@ import (
 
 func (uc *useCase) RefreshTokenGrant(ctx context.Context, token, scope string, client *oauthDomain.Client) (*oauthDto.AccessTokenResponse, error) {
 	// Fetch the refresh token
-	theRefreshToken, err := uc.repository.GetValidRefreshToken(token, client)
+	theRefreshToken, err := uc.repository.GetValidRefreshToken(ctx, token, client)
 	if err != nil {
 		return nil, err
 	}

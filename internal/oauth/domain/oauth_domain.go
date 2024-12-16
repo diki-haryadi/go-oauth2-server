@@ -32,29 +32,34 @@ type UseCase interface {
 	Login(ctx context.Context, client *model.Client, user *model.Users, scope string) (*model.AccessToken, *model.RefreshToken, error)
 	GetRefreshTokenScope(ctx context.Context, refreshToken *model.RefreshToken, requestedScope string) (string, error)
 	GrantAccessToken(ctx context.Context, client *model.Client, user *model.Users, expiresIn int, scope string) (*oauthDto.AccessTokenResponse, error)
+	Register(ctx context.Context, dto *oauthDto.UserRequestDto) (*oauthDto.UserResponse, error)
+	ChangePassword(ctx context.Context, dto *oauthDto.ChangePasswordRequest) (*oauthDto.ChangePasswordResponse, error)
+	ForgotPassword(ctx context.Context, dto *oauthDto.ForgotPasswordRequest) (*oauthDto.ForgotPasswordResponse, error)
+	UpdateUsername(ctx context.Context, user *model.Users, username string) error
 }
 
 type Repository interface {
 	GrantAccessToken(ctx context.Context, client *model.Client, user *model.Users, expiresIn int, scope string) (*model.AccessToken, error)
-	Authenticate(token string) (*model.AccessToken, error)
-	GrantAuthorizationCode(client *model.Client, user *model.Users, expiresIn int, redirectURI, scope string) (*model.AuthorizationCode, error)
-	GetValidAuthorizationCode(code, redirectURI string, client *model.Client) (*model.AuthorizationCode, error)
+	Authenticate(ctx context.Context, token string) (*model.AccessToken, error)
+	GrantAuthorizationCode(ctx context.Context, client *model.Client, user *model.Users, expiresIn int, redirectURI, scope string) (*model.AuthorizationCode, error)
+	GetValidAuthorizationCode(ctx context.Context, code, redirectURI string, client *model.Client) (*model.AuthorizationCode, error)
 	CreateClientCommon(ctx context.Context, clientID, secret, redirectURI string) (*model.Client, error)
 	FindClientByClientID(ctx context.Context, clientID string) (*model.Client, error)
 	FetchAuthorizationCodeByCode(ctx context.Context, client *model.Client, code string) (*model.AuthorizationCode, error)
-	DeleteAuthorizationCode(authorizationCodeID string) error
-	FetchClientByClientID(clientID string) (*model.Client, error)
-	FetchUserByUserID(userID string) (*model.Users, error)
-	GetOrCreateRefreshToken(client *model.Client, user *model.Users, expiresIn int, scope string) (*model.RefreshToken, error)
-	GetValidRefreshToken(token string, client *model.Client) (*model.RefreshToken, error)
-	FindRoleByID(id string) (*model.Role, error)
+	DeleteAuthorizationCode(ctx context.Context, authorizationCodeID string) error
+	FetchClientByClientID(ctx context.Context, clientID string) (*model.Client, error)
+	FetchUserByUserID(ctx context.Context, userID string) (*model.Users, error)
+	GetOrCreateRefreshToken(ctx context.Context, client *model.Client, user *model.Users, expiresIn int, scope string) (*model.RefreshToken, error)
+	GetValidRefreshToken(ctx context.Context, token string, client *model.Client) (*model.RefreshToken, error)
+	FindRoleByID(ctx context.Context, id string) (*model.Role, error)
 	GetScope(ctx context.Context, requestedScope string) (string, error)
 	GetDefaultScope(ctx context.Context) string
 	ScopeExists(ctx context.Context, requestedScope string) bool
-	FindUserByUsername(username string) (*model.Users, error)
-	CreateUserCommon(roleID, username, password string) (*model.Users, error)
-	SetPasswordCommon(user *model.Users, password string) error
-	UpdateUsernameCommon(user *model.Users, username string) error
+	FindUserByUsername(ctx context.Context, username string) (*model.Users, error)
+	CreateUserCommon(ctx context.Context, roleID, username, password string) (*model.Users, error)
+	SetPasswordCommon(ctx context.Context, user *model.Users, password string) error
+	UpdateUsernameCommon(ctx context.Context, user *model.Users, username string) error
+	UpdatePassword(ctx context.Context, uuid, password string) error
 }
 
 type GrpcController interface {
@@ -65,6 +70,10 @@ type GrpcController interface {
 type HttpController interface {
 	Tokens(c echo.Context) error
 	Introspect(c echo.Context) error
+	Register(c echo.Context) error
+	ChangePassword(c echo.Context) error
+	ForgotPassword(c echo.Context) error
+	UpdateUsername(ctx echo.Context) error
 }
 
 type Job interface {

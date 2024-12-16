@@ -1,6 +1,7 @@
 package oauthRepository
 
 import (
+	"context"
 	"database/sql"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	oauthDto "github.com/diki-haryadi/go-micro-template/internal/oauth/dto"
@@ -9,7 +10,7 @@ import (
 )
 
 // GrantAuthorizationCode grants a new authorization code using raw SQL
-func (rp *repository) GrantAuthorizationCode(client *oauthDomain.Client, user *oauthDomain.Users, expiresIn int, redirectURI, scope string) (*oauthDomain.AuthorizationCode, error) {
+func (rp *repository) GrantAuthorizationCode(ctx context.Context, client *oauthDomain.Client, user *oauthDomain.Users, expiresIn int, redirectURI, scope string) (*oauthDomain.AuthorizationCode, error) {
 	// Generate a new authorization code
 	authorizationCode := oauthDto.NewOauthAuthorizationCode(client, user, expiresIn, redirectURI, scope)
 
@@ -21,7 +22,7 @@ func (rp *repository) GrantAuthorizationCode(client *oauthDomain.Client, user *o
     `
 
 	// Execute the query and retrieve the generated ID and other fields
-	row := rp.postgres.SqlxDB.QueryRow(sqlQuery, client.ID, user.ID, authorizationCode.Code, authorizationCode.RedirectURI.String, authorizationCode.ExpiresAt, authorizationCode.Scope)
+	row := rp.postgres.SqlxDB.QueryRowContext(ctx, sqlQuery, client.ID, user.ID, authorizationCode.Code, authorizationCode.RedirectURI.String, authorizationCode.ExpiresAt, authorizationCode.Scope)
 
 	// Map the result into the authorizationCode object
 	err := row.Scan(&authorizationCode.ID, &authorizationCode.ClientID, &authorizationCode.UserID, &authorizationCode.Code, &authorizationCode.RedirectURI, &authorizationCode.ExpiresAt, &authorizationCode.Scope)
@@ -37,7 +38,7 @@ func (rp *repository) GrantAuthorizationCode(client *oauthDomain.Client, user *o
 }
 
 // getValidAuthorizationCode returns a valid non-expired authorization code using raw SQL
-func (rp *repository) GetValidAuthorizationCode(code, redirectURI string, client *oauthDomain.Client) (*oauthDomain.AuthorizationCode, error) {
+func (rp *repository) GetValidAuthorizationCode(ctx context.Context, code, redirectURI string, client *oauthDomain.Client) (*oauthDomain.AuthorizationCode, error) {
 	// Fetch the authorization code from the database using raw SQL query
 	sqlQuery := `
         SELECT id, client_id, user_id, code, redirect_uri, expires_at, scope
@@ -45,7 +46,7 @@ func (rp *repository) GetValidAuthorizationCode(code, redirectURI string, client
         WHERE client_id = $1 AND code = $2
     `
 
-	row := rp.postgres.SqlxDB.QueryRow(sqlQuery, client.ID, code)
+	row := rp.postgres.SqlxDB.QueryRowContext(ctx, sqlQuery, client.ID, code)
 
 	// Scan the result into an authorizationCode object
 	authorizationCode := new(oauthDomain.AuthorizationCode)

@@ -30,11 +30,11 @@ func (uc *useCase) IntrospectToken(ctx context.Context, token, tokenTypeHint str
 		if claims.TokenType != "access_token" {
 			return &oauthDto.IntrospectResponse{Active: false}, nil
 		}
-		accessToken, err := uc.repository.Authenticate(token)
+		accessToken, err := uc.repository.Authenticate(ctx, token)
 		if err != nil {
 			return &oauthDto.IntrospectResponse{Active: false}, nil
 		}
-		return uc.NewIntrospectResponseFromAccessToken(accessToken, claims)
+		return uc.NewIntrospectResponseFromAccessToken(ctx, accessToken, claims)
 
 	case constant.RefreshTokenHint:
 		if claims.TokenType != "refresh_token" {
@@ -44,14 +44,14 @@ func (uc *useCase) IntrospectToken(ctx context.Context, token, tokenTypeHint str
 		if err != nil {
 			return &oauthDto.IntrospectResponse{Active: false}, nil
 		}
-		return uc.NewIntrospectResponseFromRefreshToken(refreshToken, claims)
+		return uc.NewIntrospectResponseFromRefreshToken(ctx, refreshToken, claims)
 
 	default:
 		return nil, response.ErrTokenHintInvalid
 	}
 }
 
-func (uc *useCase) NewIntrospectResponseFromAccessToken(accessToken *oauthDomain.AccessToken, claims *oauthDto.TokenClaims) (*oauthDto.IntrospectResponse, error) {
+func (uc *useCase) NewIntrospectResponseFromAccessToken(ctx context.Context, accessToken *oauthDomain.AccessToken, claims *oauthDto.TokenClaims) (*oauthDto.IntrospectResponse, error) {
 	introspectResponse := &oauthDto.IntrospectResponse{
 		Active:    true,
 		Scope:     claims.Scope,
@@ -70,7 +70,7 @@ func (uc *useCase) NewIntrospectResponseFromAccessToken(accessToken *oauthDomain
 	}
 
 	if claims.UserID != "" {
-		user, err := uc.repository.FetchUserByUserID(claims.UserID)
+		user, err := uc.repository.FetchUserByUserID(ctx, claims.UserID)
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +81,7 @@ func (uc *useCase) NewIntrospectResponseFromAccessToken(accessToken *oauthDomain
 	return introspectResponse, nil
 }
 
-func (uc *useCase) NewIntrospectResponseFromRefreshToken(refreshToken *oauthDomain.RefreshToken, claims *oauthDto.TokenClaims) (*oauthDto.IntrospectResponse, error) {
+func (uc *useCase) NewIntrospectResponseFromRefreshToken(ctx context.Context, refreshToken *oauthDomain.RefreshToken, claims *oauthDto.TokenClaims) (*oauthDto.IntrospectResponse, error) {
 	introspectResponse := &oauthDto.IntrospectResponse{
 		Active:    true,
 		Scope:     claims.Scope,
@@ -100,7 +100,7 @@ func (uc *useCase) NewIntrospectResponseFromRefreshToken(refreshToken *oauthDoma
 	}
 
 	if claims.UserID != "" {
-		user, err := uc.repository.FetchUserByUserID(claims.UserID)
+		user, err := uc.repository.FetchUserByUserID(ctx, claims.UserID)
 		if err != nil {
 			return nil, err
 		}

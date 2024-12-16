@@ -1,6 +1,7 @@
 package oauthRepository
 
 import (
+	"context"
 	"database/sql"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	"github.com/diki-haryadi/go-micro-template/pkg"
@@ -10,19 +11,14 @@ import (
 	"time"
 )
 
-// FindUserByUsername looks up a user by username
-// FindUserByUsername retrieves a user by their username using raw SQL
-func (rp *repository) FindUserByUsername(username string) (*oauthDomain.Users, error) {
-	// Prepare the SQL query to fetch the user by case-insensitive username
+func (rp *repository) FindUserByUsername(ctx context.Context, username string) (*oauthDomain.Users, error) {
 	sqlQuery := "SELECT id, username, password, role_id, created_at, updated_at FROM users WHERE LOWER(username) = $1"
 
-	// Execute the query
 	user := new(oauthDomain.Users)
-	err := rp.postgres.SqlxDB.QueryRow(sqlQuery, strings.ToLower(username)).Scan(
+	err := rp.postgres.SqlxDB.QueryRowContext(ctx, sqlQuery, strings.ToLower(username)).Scan(
 		&user.ID, &user.Username, &user.Password, &user.RoleID, &user.CreatedAt, &user.UpdatedAt,
 	)
 
-	// Check if no rows are found (user not found)
 	if err == sql.ErrNoRows {
 		return nil, response.ErrUserNotFound
 	}
@@ -33,9 +29,7 @@ func (rp *repository) FindUserByUsername(username string) (*oauthDomain.Users, e
 	return user, nil
 }
 
-// CreateUserCommon creates a new user using raw SQL
-func (rp *repository) CreateUserCommon(roleID, username, password string) (*oauthDomain.Users, error) {
-	// Start with a user struct, setting initial fields
+func (rp *repository) CreateUserCommon(ctx context.Context, roleID, username, password string) (*oauthDomain.Users, error) {
 	user := &oauthDomain.Users{
 		Common: oauthDomain.Common{
 			ID:        uuid.New(),
@@ -62,7 +56,7 @@ func (rp *repository) CreateUserCommon(roleID, username, password string) (*oaut
 	// Check if the username is already taken using raw SQL
 	sqlCheckUsername := "SELECT COUNT(*) FROM users WHERE LOWER(username) = $1"
 	var count int
-	err := rp.postgres.SqlxDB.QueryRow(sqlCheckUsername, user.Username).Scan(&count)
+	err := rp.postgres.SqlxDB.QueryRowContext(ctx, sqlCheckUsername, user.Username).Scan(&count)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +71,7 @@ func (rp *repository) CreateUserCommon(roleID, username, password string) (*oaut
         VALUES ($1, $2, $3, $4, $5)
         RETURNING id, created_at, role_id, username, password
     `
-	err = rp.postgres.SqlxDB.QueryRow(sqlInsert, user.ID, user.CreatedAt, user.RoleID, user.Username, user.Password).
+	err = rp.postgres.SqlxDB.QueryRowContext(ctx, sqlInsert, user.ID, user.CreatedAt, user.RoleID, user.Username, user.Password).
 		Scan(&user.ID, &user.CreatedAt, &user.RoleID, &user.Username, &user.Password)
 	if err != nil {
 		return nil, err
@@ -87,7 +81,7 @@ func (rp *repository) CreateUserCommon(roleID, username, password string) (*oaut
 }
 
 // SetPasswordCommon updates the user's password using raw SQL
-func (rp *repository) SetPasswordCommon(user *oauthDomain.Users, password string) error {
+func (rp *repository) SetPasswordCommon(ctx context.Context, user *oauthDomain.Users, password string) error {
 	if len(password) < response.MinPasswordLength {
 		return response.ErrPasswordTooShort
 	}
@@ -106,7 +100,7 @@ func (rp *repository) SetPasswordCommon(user *oauthDomain.Users, password string
     `
 
 	// Execute the query to update the user's password
-	_, err = rp.postgres.SqlxDB.Exec(sqlQuery, string(passwordHash), time.Now().UTC(), user.ID)
+	_, err = rp.postgres.SqlxDB.ExecContext(ctx, sqlQuery, string(passwordHash), time.Now().UTC(), user.ID)
 	if err != nil {
 		return err
 	}
@@ -115,7 +109,7 @@ func (rp *repository) SetPasswordCommon(user *oauthDomain.Users, password string
 }
 
 // UpdateUsernameCommon updates the user's username using raw SQL
-func (rp *repository) UpdateUsernameCommon(user *oauthDomain.Users, username string) error {
+func (rp *repository) UpdateUsernameCommon(ctx context.Context, user *oauthDomain.Users, username string) error {
 	if username == "" {
 		return response.ErrCannotSetEmptyUsername
 	}
@@ -127,7 +121,27 @@ func (rp *repository) UpdateUsernameCommon(user *oauthDomain.Users, username str
         WHERE id = $2`
 
 	// Execute the query to update the username
-	_, err := rp.postgres.SqlxDB.Exec(sqlQuery, strings.ToLower(username), user.ID)
+	_, err := rp.postgres.SqlxDB.ExecContext(ctx, sqlQuery, strings.ToLower(username), user.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (rp *repository) UpdatePassword(ctx context.Context, uuid, password string) error {
+	if password == "" {
+		return response.ErrUserPasswordNotSet
+	}
+
+	// Prepare the SQL query to update the username field
+	sqlQuery := `
+        UPDATE users
+        SET password = $1
+        WHERE id = $2`
+
+	// Execute the query to update the username
+	_, err := rp.postgres.SqlxDB.Exec(sqlQuery, password, uuid)
 	if err != nil {
 		return err
 	}

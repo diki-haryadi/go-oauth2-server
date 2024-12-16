@@ -33,7 +33,7 @@ func (rp *repository) GrantAccessToken(ctx context.Context, client *oauthDomain.
 	query := "DELETE FROM access_tokens" + rawQuery
 
 	// Execute the query using parameterized arguments
-	_, err = tx.Exec(query, args...)
+	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		// If an error occurs, rollback the transaction
 		_ = tx.Rollback()
@@ -47,7 +47,7 @@ func (rp *repository) GrantAccessToken(ctx context.Context, client *oauthDomain.
 		_ = tx.Rollback()
 		return nil, err
 	}
-	
+
 	var sqlQueryAT string
 	var insertArgs []interface{}
 
@@ -64,7 +64,7 @@ func (rp *repository) GrantAccessToken(ctx context.Context, client *oauthDomain.
 	}
 
 	insertArgs = append(insertArgs, accessToken.Token, expiresAt, scope)
-	_, err = tx.Exec(sqlQueryAT, insertArgs...)
+	_, err = tx.ExecContext(ctx, sqlQueryAT, insertArgs...)
 	if err != nil {
 		_ = tx.Rollback()
 		return nil, err

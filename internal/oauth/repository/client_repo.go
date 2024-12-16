@@ -15,7 +15,7 @@ func (rp *repository) CreateClientCommon(ctx context.Context, clientID, secret, 
 	// 1. Check if client already exists
 	var existingClient oauthDomain.Client
 	sqlCheck := `SELECT id FROM clients WHERE client_id = $1`
-	err := rp.postgres.SqlxDB.Get(&existingClient, sqlCheck, clientID)
+	err := rp.postgres.SqlxDB.GetContext(ctx, &existingClient, sqlCheck, clientID)
 	if err == nil {
 		return nil, response.ErrClientIDTaken // Client ID is already taken
 	}
@@ -47,7 +47,7 @@ func (rp *repository) CreateClientCommon(ctx context.Context, clientID, secret, 
 	}
 
 	// Execute the insert query and scan the results into the client struct
-	err = rp.postgres.SqlxDB.QueryRow(sqlInsert, client.Key, client.Secret, client.RedirectURI, client.CreatedAt).Scan(
+	err = rp.postgres.SqlxDB.QueryRowContext(ctx, sqlInsert, client.Key, client.Secret, client.RedirectURI, client.CreatedAt).Scan(
 		&client.ID, &client.Key, &client.Secret, &client.RedirectURI, &client.CreatedAt,
 	)
 	if err != nil {
@@ -60,7 +60,7 @@ func (rp *repository) CreateClientCommon(ctx context.Context, clientID, secret, 
 func (rp *repository) FindClientByClientID(ctx context.Context, clientID string) (*oauthDomain.Client, error) {
 	client := oauthDomain.Client{}
 	query := "SELECT * FROM clients WHERE key = $1"
-	err := rp.postgres.SqlxDB.Get(&client, query, strings.ToLower(clientID))
+	err := rp.postgres.SqlxDB.GetContext(ctx, &client, query, strings.ToLower(clientID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, response.ErrClientNotFound

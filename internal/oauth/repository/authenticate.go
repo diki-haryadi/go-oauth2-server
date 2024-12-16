@@ -10,10 +10,10 @@ import (
 )
 
 // Authenticate checks the access token is valid
-func (rp *repository) Authenticate(token string) (*oauthDomain.AccessToken, error) {
+func (rp *repository) Authenticate(ctx context.Context, token string) (*oauthDomain.AccessToken, error) {
 	// 1. Fetch the access token from the database using a SELECT query
 	sqlQuery := "SELECT id, token, client_id, user_id, expires_at FROM access_tokens WHERE token = $1"
-	row := rp.postgres.SqlxDB.QueryRow(sqlQuery, token)
+	row := rp.postgres.SqlxDB.QueryRowContext(ctx, sqlQuery, token)
 
 	// 2. Scan the results into an AccessToken object
 	accessToken := new(oauthDomain.AccessToken)
@@ -47,7 +47,7 @@ func (rp *repository) Authenticate(token string) (*oauthDomain.AccessToken, erro
 	}
 
 	// Execute the query to update the refresh token expiration
-	_, err = rp.postgres.SqlxDB.Exec(refreshTokenQuery, increasedExpiresAt, accessToken.ClientID.String, userID)
+	_, err = rp.postgres.SqlxDB.ExecContext(ctx, refreshTokenQuery, increasedExpiresAt, accessToken.ClientID.String, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -56,19 +56,19 @@ func (rp *repository) Authenticate(token string) (*oauthDomain.AccessToken, erro
 	return accessToken, nil
 }
 
-func (rp *repository) ClearUserTokens(userSession *oauthDomain.UserSession) {
+func (rp *repository) ClearUserTokens(ctx context.Context, userSession *oauthDomain.UserSession) {
 	// 1. Check if the refresh token exists in the database
 	tx, _ := rp.postgres.SqlxDB.BeginTx(context.Background(), nil)
 	var refreshToken oauthDomain.RefreshToken
 	sqlQuery := "SELECT * FROM refresh_tokens WHERE token = $1"
-	row := tx.QueryRow(sqlQuery, userSession.RefreshToken)
+	row := tx.QueryRowContext(ctx, sqlQuery, userSession.RefreshToken)
 
 	// 2. If refresh token is found, delete associated records with client_id and user_id
 	err := row.Scan(&refreshToken.ID, &refreshToken.Token, &refreshToken.ClientID, &refreshToken.UserID)
-	if err == nil { // Token found
+	if err == nil { // Username found
 		// Perform delete operation for refresh tokens
 		deleteQuery := "DELETE FROM refresh_tokens WHERE client_id = $1 AND user_id = $2"
-		_, err = tx.Exec(deleteQuery, refreshToken.ClientID.String, refreshToken.UserID.String)
+		_, err = tx.ExecContext(ctx, deleteQuery, refreshToken.ClientID.String, refreshToken.UserID.String)
 		if err != nil {
 			tx.Rollback()
 			return
@@ -78,14 +78,14 @@ func (rp *repository) ClearUserTokens(userSession *oauthDomain.UserSession) {
 	// 3. Check if the access token exists in the database
 	var accessToken oauthDomain.AccessToken
 	sqlQuery = "SELECT * FROM access_tokens WHERE token = $1"
-	row = tx.QueryRow(sqlQuery, userSession.AccessToken)
+	row = tx.QueryRowContext(ctx, sqlQuery, userSession.AccessToken)
 
 	// 4. If access token is found, delete associated records with client_id and user_id
 	err = row.Scan(&accessToken.ID, &accessToken.Token, &accessToken.ClientID, &accessToken.UserID)
-	if err == nil { // Token found
+	if err == nil { // Username found
 		// Perform delete operation for access tokens
 		deleteQuery := "DELETE FROM access_tokens WHERE client_id = $1 AND user_id = $2"
-		_, err = tx.Exec(deleteQuery, accessToken.ClientID.String, accessToken.UserID.String)
+		_, err = tx.ExecContext(ctx, deleteQuery, accessToken.ClientID.String, accessToken.UserID.String)
 		if err != nil {
 			tx.Rollback()
 			return

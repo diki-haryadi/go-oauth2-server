@@ -11,7 +11,7 @@ import (
 
 func (uc *useCase) ClientCredentialsGrant(ctx context.Context, scope string, refreshToken string, client *oauthDomain.Client) (*oauthDto.AccessTokenResponse, error) {
 	// Fetch the refresh token
-	theRefreshToken, err := uc.repository.GetValidRefreshToken(refreshToken, client)
+	theRefreshToken, err := uc.repository.GetValidRefreshToken(ctx, refreshToken, client)
 	if err != nil {
 		return nil, err
 	}

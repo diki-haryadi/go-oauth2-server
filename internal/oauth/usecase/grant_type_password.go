@@ -17,7 +17,7 @@ func (uc *useCase) PasswordGrant(ctx context.Context, username, password string,
 	}
 
 	// Authenticate the user
-	user, err := uc.AuthUser(username, password)
+	user, err := uc.AuthUser(ctx, username, password)
 	if err != nil {
 		// For security reasons, return a general error message
 		return nil, response.ErrInvalidUsernameOrPassword

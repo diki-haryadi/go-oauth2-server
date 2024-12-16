@@ -21,6 +21,10 @@ func (r *Router) Register(e *echo.Group) {
 	{
 		oauth.POST("/tokens", r.controller.Tokens)
 		oauth.POST("/introspect", r.controller.Introspect)
+		e.POST("/register", r.controller.Register)
+		e.POST("/change-password", r.controller.ChangePassword)
+		e.POST("/forgot-password", r.controller.ForgotPassword)
+		e.POST("/update-username", r.controller.UpdateUsername)
 	}
 
 }

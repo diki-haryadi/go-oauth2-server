@@ -6,6 +6,7 @@ import (
 	oauthModel "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	oauthDto "github.com/diki-haryadi/go-micro-template/internal/oauth/dto"
 	"github.com/diki-haryadi/go-micro-template/pkg/response"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -207,4 +208,116 @@ func (c controller) BasicAuthClient(ctx echo.Context) (*oauthModel.Client, error
 	}
 
 	return client, nil
+}
+
+func (c controller) Register(ctx echo.Context) error {
+	res := response.NewJSONResponse()
+	aDto := new(oauthDto.UserRequestDto).GetFieldsUser(ctx)
+	if err := aDto.ValidateUserDto(); err != nil {
+		res.SetError(response.ErrInvalidIntrospectRequest).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
+	}
+
+	_, err := c.BasicAuthClient(ctx)
+	if err != nil {
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
+	}
+
+	register, err := c.useCase.Register(
+		ctx.Request().Context(),
+		aDto)
+
+	if err != nil {
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
+	}
+
+	res.APIStatusSuccess().SetData(*register).Send(ctx.Response().Writer)
+	return nil
+}
+
+func (c controller) ChangePassword(ctx echo.Context) error {
+	res := response.NewJSONResponse()
+	aDto := new(oauthDto.ChangePasswordRequest).GetFieldsChangePassword(ctx)
+	if err := aDto.ValidateChangePasswordDto(); err != nil {
+		res.SetError(response.ErrInvalidIntrospectRequest).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
+	}
+
+	_, err := c.BasicAuthClient(ctx)
+	if err != nil {
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
+	}
+
+	introspect, err := c.useCase.ChangePassword(
+		ctx.Request().Context(), aDto)
+
+	if err != nil {
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
+	}
+
+	res.APIStatusSuccess().SetData(*introspect).Send(ctx.Response().Writer)
+	return nil
+}
+
+func (c controller) ForgotPassword(ctx echo.Context) error {
+	res := response.NewJSONResponse()
+	aDto := new(oauthDto.ForgotPasswordRequest).GetFieldsForgotPassword(ctx)
+	if err := aDto.ValidateForgotPasswordDto(); err != nil {
+		res.SetError(response.ErrInvalidIntrospectRequest).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
+	}
+
+	_, err := c.BasicAuthClient(ctx)
+	if err != nil {
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
+	}
+
+	introspect, err := c.useCase.ForgotPassword(
+		ctx.Request().Context(), aDto)
+
+	if err != nil {
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
+	}
+
+	res.APIStatusSuccess().SetData(*introspect).Send(ctx.Response().Writer)
+	return nil
+}
+
+func (c controller) UpdateUsername(ctx echo.Context) error {
+	res := response.NewJSONResponse()
+	aDto := new(oauthDto.UpdateUsernameRequest).GetFieldsUpdateUsername(ctx)
+	if err := aDto.ValidateUsernameDto(); err != nil {
+		res.SetError(response.ErrInvalidIntrospectRequest).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
+	}
+
+	_, err := c.BasicAuthClient(ctx)
+	if err != nil {
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
+	}
+
+	uuid, err := uuid.Parse(aDto.UUID)
+	if err != nil {
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
+	}
+
+	err = c.useCase.UpdateUsername(
+		ctx.Request().Context(),
+		aDto.ToModel(uuid), aDto.Username)
+
+	if err != nil {
+		res.SetError(err).SetMessage(err.Error()).Send(ctx.Response().Writer)
+		return nil
+	}
+
+	res.APIStatusSuccess().Send(ctx.Response().Writer)
+	return nil
 }

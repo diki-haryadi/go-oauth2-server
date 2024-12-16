@@ -27,10 +27,12 @@ var (
 	ErrInvalidRedirectURI            = errors.New("Invalid redirect URI")
 	ErrInvalidScope                  = errors.New("Invalid scope")
 	ErrInvalidUsernameOrPassword     = errors.New("Invalid username or password")
+	ErrInvalidPassword               = errors.New("Invalid password")
+	ErrInvalidPasswordCannotSame     = errors.New("Invalid password cannot same")
 	ErrRefreshTokenNotFound          = errors.New("Refresh token not found")
 	ErrRefreshTokenExpired           = errors.New("Refresh token expired")
 	ErrRequestedScopeCannotBeGreater = errors.New("Requested scope cannot be greater")
-	ErrTokenMissing                  = errors.New("Token missing")
+	ErrTokenMissing                  = errors.New("Username missing")
 	ErrTokenHintInvalid              = errors.New("Invalid token hint")
 	ErrAccessTokenNotFound           = errors.New("Access token not found")
 	ErrAccessTokenExpired            = errors.New("Access token expired")
@@ -98,7 +100,7 @@ func GetErrorCode(err error) string {
 	case ErrMethodNotAllowed:
 		return StatusCodeMethodNotAllowed
 	case ErrInvalidGrantType, ErrInvalidClientIDOrSecret, ErrInvalidRedirectURI, ErrInvalidScope,
-		ErrInvalidUsernameOrPassword, ErrTokenHintInvalid, ErrInvalidAuthorizationCodeGrantRequest,
+		ErrInvalidUsernameOrPassword, ErrInvalidPassword, ErrInvalidPasswordCannotSame, ErrTokenHintInvalid, ErrInvalidAuthorizationCodeGrantRequest,
 		ErrInvalidPasswordGrantRequest, ErrInvalidClientCredentialsGrantRequest, ErrInvalidIntrospectRequest:
 		return StatusCodeBadRequest
 	case ErrAuthorizationCodeNotFound, ErrRefreshTokenNotFound, ErrTokenMissing, ErrAccessTokenNotFound:

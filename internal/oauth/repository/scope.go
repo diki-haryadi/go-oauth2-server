@@ -29,7 +29,7 @@ func (rp *repository) GetScope(ctx context.Context, requestedScope string) (stri
 func (rp *repository) GetDefaultScope(ctx context.Context) string {
 	// Fetch default scopes from the database using raw SQL
 	sqlQuery := "SELECT scope FROM scopes WHERE is_default = $1"
-	rows, err := rp.postgres.SqlxDB.Query(sqlQuery, true)
+	rows, err := rp.postgres.SqlxDB.QueryContext(ctx, sqlQuery, true)
 	if err != nil {
 		// Handle error (e.g., database connection issues)
 		return ""
@@ -66,7 +66,7 @@ func (rp *repository) ScopeExists(ctx context.Context, requestedScope string) bo
 	query += strings.Join(placeholders, ", ") + ")"
 
 	var count int
-	err := rp.postgres.SqlxDB.QueryRow(query, requestedScope).Scan(&count)
+	err := rp.postgres.SqlxDB.QueryRowContext(ctx, query, scopes).Scan(&count)
 	if err != nil {
 		return false
 	}

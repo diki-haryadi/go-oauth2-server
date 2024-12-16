@@ -1,6 +1,7 @@
 package oauthRepository
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
@@ -11,7 +12,7 @@ import (
 
 // GetOrCreateRefreshToken retrieves an existing refresh token, if expired,
 // the token gets deleted and a new refresh token is created using raw SQL
-func (rp *repository) GetOrCreateRefreshToken(client *oauthDomain.Client, user *oauthDomain.Users, expiresIn int, scope string) (*oauthDomain.RefreshToken, error) {
+func (rp *repository) GetOrCreateRefreshToken(ctx context.Context, client *oauthDomain.Client, user *oauthDomain.Users, expiresIn int, scope string) (*oauthDomain.RefreshToken, error) {
 	// Try to fetch an existing refresh token first using raw SQL
 	var refreshToken oauthDomain.RefreshToken
 	sqlQuery := "SELECT id, client_id, user_id, token, expires_at, scope FROM refresh_tokens WHERE client_id = $1"
@@ -22,7 +23,7 @@ func (rp *repository) GetOrCreateRefreshToken(client *oauthDomain.Client, user *
 		sqlQuery += " AND user_id IS NULL"
 	}
 
-	err := rp.postgres.SqlxDB.QueryRow(sqlQuery, client.ID, user.ID).Scan(
+	err := rp.postgres.SqlxDB.QueryRowContext(ctx, sqlQuery, client.ID, user.ID).Scan(
 		&refreshToken.ID,
 		&refreshToken.ClientID,
 		&refreshToken.UserID,
@@ -41,7 +42,7 @@ func (rp *repository) GetOrCreateRefreshToken(client *oauthDomain.Client, user *
 	if expired || err == sql.ErrNoRows {
 		if err == nil { // If token exists, delete it
 			sqlDelete := "DELETE FROM refresh_tokens WHERE id = $1"
-			_, err = rp.postgres.SqlxDB.Exec(sqlDelete, refreshToken.ID)
+			_, err = rp.postgres.SqlxDB.ExecContext(ctx, sqlDelete, refreshToken.ID)
 			if err != nil {
 				return nil, err
 			}
@@ -58,7 +59,7 @@ func (rp *repository) GetOrCreateRefreshToken(client *oauthDomain.Client, user *
             VALUES ($1, $2, $3, $4, $5)
             RETURNING id, client_id, user_id, token, expires_at, scope`
 		fmt.Println(refreshToken)
-		err = rp.postgres.SqlxDB.QueryRow(sqlInsert, refreshToken.ClientID, refreshToken.UserID, refreshToken.Token, refreshToken.ExpiresAt, refreshToken.Scope).
+		err = rp.postgres.SqlxDB.QueryRowContext(ctx, sqlInsert, refreshToken.ClientID, refreshToken.UserID, refreshToken.Token, refreshToken.ExpiresAt, refreshToken.Scope).
 			Scan(&refreshToken.ID, &refreshToken.ClientID, &refreshToken.UserID, &refreshToken.Token, &refreshToken.ExpiresAt, &refreshToken.Scope)
 
 		if err != nil {
@@ -71,12 +72,12 @@ func (rp *repository) GetOrCreateRefreshToken(client *oauthDomain.Client, user *
 }
 
 // GetValidRefreshToken returns a valid non expired refresh token using raw SQL
-func (rp *repository) GetValidRefreshToken(token string, client *oauthDomain.Client) (*oauthDomain.RefreshToken, error) {
+func (rp *repository) GetValidRefreshToken(ctx context.Context, token string, client *oauthDomain.Client) (*oauthDomain.RefreshToken, error) {
 	// Fetch the refresh token from the database using raw SQL
 	var refreshToken oauthDomain.RefreshToken
 	sqlQuery := "SELECT id, client_id, user_id, token, expires_at, scope FROM refresh_tokens WHERE client_id = $1 AND token = $2"
 
-	err := rp.postgres.SqlxDB.QueryRow(sqlQuery, client.ID, token).Scan(
+	err := rp.postgres.SqlxDB.QueryRowContext(ctx, sqlQuery, client.ID, token).Scan(
 		&refreshToken.ID,
 		&refreshToken.ClientID,
 		&refreshToken.UserID,

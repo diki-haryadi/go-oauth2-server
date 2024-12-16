@@ -22,7 +22,7 @@ func (rp *repository) FetchAuthorizationCodeByCode(ctx context.Context, client *
 	var role oauthDomain.Role
 	var cl oauthDomain.Client
 
-	row := rp.postgres.SqlxDB.QueryRow(sqlQuery, client.ID, code)
+	row := rp.postgres.SqlxDB.QueryRowContext(ctx, sqlQuery, client.ID, code)
 
 	// Scan the result into the authorizationCode struct
 	err := row.Scan(
@@ -54,10 +54,10 @@ func (rp *repository) FetchAuthorizationCodeByCode(ctx context.Context, client *
 }
 
 // DeleteAuthorizationCode deletes the authorization code from the database after use
-func (rp *repository) DeleteAuthorizationCode(authorizationCodeID string) error {
+func (rp *repository) DeleteAuthorizationCode(ctx context.Context, authorizationCodeID string) error {
 	sqlDelete := `
         DELETE FROM authorization_codes WHERE id = $1
     `
-	_, err := rp.postgres.SqlxDB.Exec(sqlDelete, authorizationCodeID)
+	_, err := rp.postgres.SqlxDB.ExecContext(ctx, sqlDelete, authorizationCodeID)
 	return err
 }
