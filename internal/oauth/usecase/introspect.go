@@ -40,7 +40,7 @@ func (uc *useCase) IntrospectToken(ctx context.Context, token, tokenTypeHint str
 		if claims.TokenType != "refresh_token" {
 			return &oauthDto.IntrospectResponse{Active: false}, nil
 		}
-		refreshToken, err := uc.repository.GetValidRefreshToken(token, client)
+		refreshToken, err := uc.repository.GetValidRefreshToken(ctx, token, client)
 		if err != nil {
 			return &oauthDto.IntrospectResponse{Active: false}, nil
 		}
@@ -62,7 +62,7 @@ func (uc *useCase) NewIntrospectResponseFromAccessToken(ctx context.Context, acc
 	}
 
 	if claims.ClientID != "" {
-		client, err := uc.repository.FetchClientByClientID(claims.ClientID)
+		client, err := uc.repository.FetchClientByClientID(ctx, claims.ClientID)
 		if err != nil {
 			return nil, err
 		}
@@ -92,7 +92,7 @@ func (uc *useCase) NewIntrospectResponseFromRefreshToken(ctx context.Context, re
 	}
 
 	if claims.ClientID != "" {
-		client, err := uc.repository.FetchClientByClientID(claims.ClientID)
+		client, err := uc.repository.FetchClientByClientID(ctx, claims.ClientID)
 		if err != nil {
 			return nil, err
 		}

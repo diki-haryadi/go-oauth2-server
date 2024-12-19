@@ -23,6 +23,15 @@ func (g *PasswordGrantRequestDto) GetFields(ctx echo.Context) *PasswordGrantRequ
 	}
 }
 
+func (g *PasswordGrantRequestDto) GetFieldsValue(username string, password string, scope string) *PasswordGrantRequestDto {
+	return &PasswordGrantRequestDto{
+		GrantType: "-",
+		Username:  username,
+		Password:  password,
+		Scope:     scope,
+	}
+}
+
 func (g *PasswordGrantRequestDto) ToModel(clientID uuid.UUID) *oauthModel.Client {
 	return &oauthModel.Client{
 		Common: oauthModel.Common{

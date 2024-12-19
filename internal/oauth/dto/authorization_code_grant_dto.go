@@ -26,6 +26,15 @@ func (g *AuthorizationCodeGrantRequestDto) GetFields(ctx echo.Context) *Authoriz
 	}
 }
 
+func (g *AuthorizationCodeGrantRequestDto) GetFieldsValue(code string, redirectUri string, clientID string) *AuthorizationCodeGrantRequestDto {
+	return &AuthorizationCodeGrantRequestDto{
+		GrantType:   "-",
+		Code:        code,
+		RedirectUri: redirectUri,
+		ClientID:    clientID,
+	}
+}
+
 func (g *AuthorizationCodeGrantRequestDto) ToModel(clientID uuid.UUID) *oauthModel.Client {
 	return &oauthModel.Client{
 		Common: oauthModel.Common{

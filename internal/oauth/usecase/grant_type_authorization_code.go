@@ -35,7 +35,7 @@ func (uc *useCase) AuthorizationCodeGrant(ctx context.Context, code, redirectURI
 	}
 
 	// 5. Delete the authorization code from the database
-	err = uc.repository.DeleteAuthorizationCode(fmt.Sprint(authorizationCode.ID))
+	err = uc.repository.DeleteAuthorizationCode(ctx, fmt.Sprint(authorizationCode.ID))
 	if err != nil {
 		return nil, err
 	}

@@ -19,6 +19,13 @@ func (g *ClientCredentialsGrantRequestDto) GetFields(ctx echo.Context) *ClientCr
 	}
 }
 
+func (g *ClientCredentialsGrantRequestDto) GetFieldsValue(scope string) *ClientCredentialsGrantRequestDto {
+	return &ClientCredentialsGrantRequestDto{
+		GrantType: "-",
+		Scope:     scope,
+	}
+}
+
 func (g *ClientCredentialsGrantRequestDto) ToModel(clientID uuid.UUID) *oauthModel.Client {
 	return &oauthModel.Client{
 		Common: oauthModel.Common{

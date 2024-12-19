@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	authConfigurator "github.com/diki-haryadi/go-micro-template/internal/authentication/configurator"
 	oauthConfigurator "github.com/diki-haryadi/go-micro-template/internal/oauth/configurator"
 	"github.com/diki-haryadi/ztools/config"
 	"github.com/diki-haryadi/ztools/env"
@@ -114,6 +115,11 @@ func configureModule(ctx context.Context, ic *iContainer.IContainer, extBridge *
 	}
 
 	err = oauthConfigurator.NewConfigurator(ic, extBridge).Configure(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = authConfigurator.NewConfigurator(ic, extBridge).Configure(ctx)
 	if err != nil {
 		return err
 	}

@@ -26,6 +26,14 @@ func (g *RefreshTokenRequestDto) GetFields(ctx echo.Context) *RefreshTokenReques
 	}
 }
 
+func (g *RefreshTokenRequestDto) GetFieldsValue(refreshToken string, scope string) *RefreshTokenRequestDto {
+	return &RefreshTokenRequestDto{
+		GrantType:    "-",
+		RefreshToken: refreshToken,
+		Scope:        scope,
+	}
+}
+
 func (g *RefreshTokenRequestDto) ToModel(clientID uuid.UUID) *oauthModel.Client {
 	return &oauthModel.Client{
 		Common: oauthModel.Common{

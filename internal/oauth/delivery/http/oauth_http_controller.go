@@ -251,7 +251,7 @@ func (c controller) ChangePassword(ctx echo.Context) error {
 		return nil
 	}
 
-	introspect, err := c.useCase.ChangePassword(
+	changePass, err := c.useCase.ChangePassword(
 		ctx.Request().Context(), aDto)
 
 	if err != nil {
@@ -259,7 +259,7 @@ func (c controller) ChangePassword(ctx echo.Context) error {
 		return nil
 	}
 
-	res.APIStatusSuccess().SetData(*introspect).Send(ctx.Response().Writer)
+	res.APIStatusSuccess().SetData(*changePass).Send(ctx.Response().Writer)
 	return nil
 }
 
@@ -277,7 +277,7 @@ func (c controller) ForgotPassword(ctx echo.Context) error {
 		return nil
 	}
 
-	introspect, err := c.useCase.ForgotPassword(
+	forgotPass, err := c.useCase.ForgotPassword(
 		ctx.Request().Context(), aDto)
 
 	if err != nil {
@@ -285,7 +285,7 @@ func (c controller) ForgotPassword(ctx echo.Context) error {
 		return nil
 	}
 
-	res.APIStatusSuccess().SetData(*introspect).Send(ctx.Response().Writer)
+	res.APIStatusSuccess().SetData(*forgotPass).Send(ctx.Response().Writer)
 	return nil
 }
 

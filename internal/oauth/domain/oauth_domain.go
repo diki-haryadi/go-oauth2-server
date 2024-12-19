@@ -4,17 +4,10 @@ import (
 	"context"
 	model "github.com/diki-haryadi/go-micro-template/internal/oauth/domain/model"
 	oauthDto "github.com/diki-haryadi/go-micro-template/internal/oauth/dto"
-	articleV1 "github.com/diki-haryadi/protobuf-template/go-micro-template/article/v1"
-	"github.com/google/uuid"
+	oauth2 "github.com/diki-haryadi/protobuf-ecomerce/oauth2_server_service/oauth2/v1"
 	"github.com/labstack/echo/v4"
 	"github.com/segmentio/kafka-go"
 )
-
-type Article struct {
-	ID          uuid.UUID `db:"id" json:"id"`
-	Name        string    `db:"name" json:"name"`
-	Description string    `db:"description" json:"desc"`
-}
 
 type Configurator interface {
 	Configure(ctx context.Context) error
@@ -63,8 +56,10 @@ type Repository interface {
 }
 
 type GrpcController interface {
-	CreateArticle(ctx context.Context, req *articleV1.CreateArticleRequest) (*articleV1.CreateArticleResponse, error)
-	GetArticleById(ctx context.Context, req *articleV1.GetArticleByIdRequest) (*articleV1.GetArticleByIdResponse, error)
+	PasswordGrant(ctx context.Context, req *oauth2.PasswordGrantRequest) (*oauth2.PasswordGrantResponse, error)
+	AuthorizationCodeGrant(ctx context.Context, req *oauth2.AuthorizationCodeGrantRequest) (*oauth2.AuthorizationCodeGrantResponse, error)
+	ClientCredentialsGrant(ctx context.Context, req *oauth2.ClientCredentialsGrantRequest) (*oauth2.ClientCredentialsGrantResponse, error)
+	RefreshTokenGrant(ctx context.Context, req *oauth2.RefreshTokenGrantRequest) (*oauth2.RefreshTokenGrantResponse, error)
 }
 
 type HttpController interface {

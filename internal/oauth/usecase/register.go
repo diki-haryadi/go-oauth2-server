@@ -12,7 +12,6 @@ func (uc *useCase) Register(ctx context.Context, dto *oauthDto.UserRequestDto) (
 	}
 	return &oauthDto.UserResponse{
 		Username: user.Username,
-		Password: user.Password.String,
 		Role:     user.Role.Name,
 	}, nil
 }

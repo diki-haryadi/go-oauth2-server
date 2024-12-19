@@ -26,7 +26,7 @@ func (uc *useCase) Login(ctx context.Context, client *oauthDomain.Client, user *
 	}
 
 	// Create or retrieve a refresh token
-	refreshToken, err := uc.repository.GetOrCreateRefreshToken(
+	refreshToken, err := uc.repository.GetOrCreateRefreshToken(ctx,
 		client,
 		user,
 		config.BaseConfig.App.ConfigOauth.Oauth.AccessTokenLifetime, // expires in
