@@ -148,3 +148,17 @@ func (rp *repository) UpdatePassword(ctx context.Context, uuid, password string)
 
 	return nil
 }
+
+// FetchUserByUserID retrieves the user by user_id using raw SQL
+func (rp *repository) FetchUserByUserID(ctx context.Context, userID string) (*oauthDomain.Users, error) {
+	sqlUserQuery := "SELECT id, username, password FROM users WHERE id = $1"
+	user := new(oauthDomain.Users)
+	err := rp.postgres.SqlxDB.QueryRowContext(ctx, sqlUserQuery, userID).Scan(&user.ID, &user.Username, &user.Password)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, response.ErrUserNotFound
+		}
+		return nil, err
+	}
+	return user, nil
+}

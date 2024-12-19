@@ -2,25 +2,25 @@ package authGrpcController
 
 import (
 	"context"
-	oauthDomain "github.com/diki-haryadi/go-micro-template/internal/authentication/domain"
-	oauthModel "github.com/diki-haryadi/go-micro-template/internal/authentication/domain/model"
-	oauthDto "github.com/diki-haryadi/go-micro-template/internal/authentication/dto"
+	authDomain "github.com/diki-haryadi/go-micro-template/internal/authentication/domain"
+	authModel "github.com/diki-haryadi/go-micro-template/internal/authentication/domain/model"
+	authDto "github.com/diki-haryadi/go-micro-template/internal/authentication/dto"
 	"github.com/diki-haryadi/go-micro-template/pkg/response"
 	auhenticationV1 "github.com/diki-haryadi/protobuf-ecomerce/oauth2_server_service/authentication/v1"
 	"github.com/google/uuid"
 )
 
 type controller struct {
-	useCase oauthDomain.UseCase
+	useCase authDomain.UseCase
 }
 
-func NewController(uc oauthDomain.UseCase) oauthDomain.GrpcController {
+func NewController(uc authDomain.UseCase) authDomain.GrpcController {
 	return &controller{
 		useCase: uc,
 	}
 }
 
-func (c *controller) BasicAuthClient(ctx context.Context, clientID, secret string) (*oauthModel.Client, error) {
+func (c *controller) BasicAuthClient(ctx context.Context, clientID, secret string) (*authModel.Client, error) {
 
 	// Authenticate the client
 	client, err := c.useCase.AuthClient(ctx, clientID, secret)
@@ -32,7 +32,7 @@ func (c *controller) BasicAuthClient(ctx context.Context, clientID, secret strin
 }
 
 func (c *controller) Register(ctx context.Context, req *auhenticationV1.RegisterRequest) (*auhenticationV1.RegisterResponse, error) {
-	aDto := new(oauthDto.UserRequestDto).GetFieldsUserValue(req.Username, req.Password, req.RoleId)
+	aDto := new(authDto.UserRequestDto).GetFieldsUserValue(req.Username, req.Password, req.RoleId)
 	if err := aDto.ValidateUserDto(); err != nil {
 		return &auhenticationV1.RegisterResponse{}, err
 	}
@@ -51,13 +51,14 @@ func (c *controller) Register(ctx context.Context, req *auhenticationV1.Register
 	}
 
 	return &auhenticationV1.RegisterResponse{
+		Uuid:     register.UUID,
 		Username: register.Username,
-		Role:     register.Role,
+		RoleId:   register.RoleID,
 	}, err
 }
 
 func (c *controller) ChangePassword(ctx context.Context, req *auhenticationV1.ChangePasswordRequest) (*auhenticationV1.ChangePasswordResponse, error) {
-	aDto := new(oauthDto.ChangePasswordRequest).GetFieldsChangePasswordValue(req.Uuid, req.Password, req.NewPassword)
+	aDto := new(authDto.ChangePasswordRequest).GetFieldsChangePasswordValue(req.Uuid, req.Password, req.NewPassword)
 	if err := aDto.ValidateChangePasswordDto(); err != nil {
 		return &auhenticationV1.ChangePasswordResponse{}, err
 	}
@@ -79,7 +80,7 @@ func (c *controller) ChangePassword(ctx context.Context, req *auhenticationV1.Ch
 }
 
 func (c *controller) ForgotPassword(ctx context.Context, req *auhenticationV1.ForgotPasswordRequest) (*auhenticationV1.ForgotPasswordResponse, error) {
-	aDto := new(oauthDto.ForgotPasswordRequest).GetFieldsForgotPasswordValue(req.Uuid, req.Password)
+	aDto := new(authDto.ForgotPasswordRequest).GetFieldsForgotPasswordValue(req.Uuid, req.Password)
 	if err := aDto.ValidateForgotPasswordDto(); err != nil {
 		return &auhenticationV1.ForgotPasswordResponse{}, err
 	}
@@ -101,19 +102,23 @@ func (c *controller) ForgotPassword(ctx context.Context, req *auhenticationV1.Fo
 }
 
 func (c *controller) UpdateUsername(ctx context.Context, req *auhenticationV1.UpdateUsernameRequest) (*auhenticationV1.UpdateUsernameResponse, error) {
-	aDto := new(oauthDto.UpdateUsernameRequest).GetFieldsUpdateUsernameValue(req.Uuid, req.Username)
+	aDto := new(authDto.UpdateUsernameRequest).GetFieldsUpdateUsernameValue(req.Uuid, req.Username)
 	if err := aDto.ValidateUsernameDto(); err != nil {
 		return &auhenticationV1.UpdateUsernameResponse{}, err
 	}
 
 	_, err := c.BasicAuthClient(ctx, req.ClientId, req.ClientSecret)
 	if err != nil {
-		return &auhenticationV1.UpdateUsernameResponse{}, err
+		return &auhenticationV1.UpdateUsernameResponse{
+			Status: false,
+		}, err
 	}
 
 	uuid, err := uuid.Parse(aDto.UUID)
 	if err != nil {
-		return &auhenticationV1.UpdateUsernameResponse{}, err
+		return &auhenticationV1.UpdateUsernameResponse{
+			Status: false,
+		}, err
 	}
 
 	err = c.useCase.UpdateUsername(
@@ -121,8 +126,12 @@ func (c *controller) UpdateUsername(ctx context.Context, req *auhenticationV1.Up
 		aDto.ToModel(uuid), aDto.Username)
 
 	if err != nil {
-		return &auhenticationV1.UpdateUsernameResponse{}, err
+		return &auhenticationV1.UpdateUsernameResponse{
+			Status: false,
+		}, err
 	}
 
-	return &auhenticationV1.UpdateUsernameResponse{}, err
+	return &auhenticationV1.UpdateUsernameResponse{
+		Status: true,
+	}, err
 }

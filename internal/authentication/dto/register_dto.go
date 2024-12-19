@@ -58,7 +58,8 @@ func (caDto *UserRequestDto) ValidateUserDto() error {
 
 // UserResponse ...
 type UserResponse struct {
+	UUID     string `json:"uuid"`
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Role     string `json:"role"`
+	RoleID   string `json:"role_id"`
 }

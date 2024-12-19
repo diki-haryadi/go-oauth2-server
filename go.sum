@@ -16,12 +16,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.4/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46t
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/diki-haryadi/protobuf-ecomerce v0.1.6 h1:7Rjt6/EQLpbaAwxeLwp+uurMtB4J7CtqshnxIhOcpZs=
-github.com/diki-haryadi/protobuf-ecomerce v0.1.6/go.mod h1:8w4/yUxRC7LkAvGjBX675hIrizhMZ30fIZiTTIsEGWw=
-github.com/diki-haryadi/protobuf-ecomerce v0.1.7 h1:L4BZjHpFGFM48TtJH1Js+VRwbkejy0mJ4JP2sU+zubg=
-github.com/diki-haryadi/protobuf-ecomerce v0.1.7/go.mod h1:8w4/yUxRC7LkAvGjBX675hIrizhMZ30fIZiTTIsEGWw=
-github.com/diki-haryadi/protobuf-ecomerce v0.1.8 h1:v4u4MwG/SNMuNmtZXHGDCq8rDdOrXC8vmHLNrGy1fLk=
-github.com/diki-haryadi/protobuf-ecomerce v0.1.8/go.mod h1:8w4/yUxRC7LkAvGjBX675hIrizhMZ30fIZiTTIsEGWw=
+github.com/diki-haryadi/protobuf-ecomerce v0.1.9 h1:wWGvCmnisRLyvEBrrL3lsglKwT1zBUGk8O2KcRXxamA=
+github.com/diki-haryadi/protobuf-ecomerce v0.1.9/go.mod h1:MtqkMTq0DLX9Q+oD9czJPheaFrhg4zqq3Jbo1oHzxQ0=
 github.com/diki-haryadi/protobuf-template v0.0.0-20241114145947-cffb40e44840 h1:2GsALvTfXFcq6O5HlEYtjB9xYA55J7iq2vgkjYFj2SY=
 github.com/diki-haryadi/protobuf-template v0.0.0-20241114145947-cffb40e44840/go.mod h1:gIrRM9XyrN6zDsy51I8NuGOLvUd5r+D+b1d8snB2VZI=
 github.com/diki-haryadi/ztools v0.0.14 h1:cahZg1Lygo4iEwadIaaFAmP/6psYMSlSQDpoGauiNzs=
@@ -281,8 +277,8 @@ google.golang.org/grpc v1.23.0/go.mod h1:Y5yQAOtifL1yxbo5wqy6BxZv8vAUGQwXBOALyac
 google.golang.org/grpc v1.25.1/go.mod h1:c3i+UQWmh7LiEpx4sFZnkU36qjEYZ0imhYfXVyQciAY=
 google.golang.org/grpc v1.27.0/go.mod h1:qbnxyOmOxrQa7FizSgH+ReBfzJrCY1pSN7KXBS8abTk=
 google.golang.org/grpc v1.29.1/go.mod h1:itym6AZVZYACWQqET3MqgPpjcuV5QH3BxFS3IjizoKk=
-google.golang.org/grpc v1.69.0 h1:quSiOM1GJPmPH5XtU+BCoVXcDVJJAzNcoyfC2cCjGkI=
-google.golang.org/grpc v1.69.0/go.mod h1:vyjdE6jLBI76dgpDojsFGNaHlxdjXN9ghpnd2o7JGZ4=
+google.golang.org/grpc v1.69.2 h1:U3S9QEtbXC0bYNvRtcoklF3xGtLViumSYxWykJS+7AU=
+google.golang.org/grpc v1.69.2/go.mod h1:vyjdE6jLBI76dgpDojsFGNaHlxdjXN9ghpnd2o7JGZ4=
 google.golang.org/protobuf v1.36.0 h1:mjIs9gYtt56AzC4ZaffQuh88TZurBGhIJMBZGSxNerQ=
 google.golang.org/protobuf v1.36.0/go.mod h1:9fA7Ob0pmnwhb644+1+CVWFRbNajQ6iRojtC/QF5bRE=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=

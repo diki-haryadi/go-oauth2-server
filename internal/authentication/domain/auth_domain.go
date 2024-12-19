@@ -22,6 +22,7 @@ type UseCase interface {
 }
 
 type Repository interface {
+	FetchUserByUserID(ctx context.Context, userID string) (*model.Users, error)
 	CreateClientCommon(ctx context.Context, clientID, secret, redirectURI string) (*model.Client, error)
 	FindClientByClientID(ctx context.Context, clientID string) (*model.Client, error)
 	FindRoleByID(ctx context.Context, id string) (*model.Role, error)

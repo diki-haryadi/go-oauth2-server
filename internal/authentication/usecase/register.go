@@ -11,7 +11,8 @@ func (uc *useCase) Register(ctx context.Context, dto *authDto.UserRequestDto) (*
 		return &authDto.UserResponse{}, nil
 	}
 	return &authDto.UserResponse{
+		UUID:     user.ID.String(),
 		Username: user.Username,
-		Role:     user.Role.Name,
+		RoleID:   user.RoleID.String,
 	}, nil
 }

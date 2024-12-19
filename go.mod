@@ -5,7 +5,7 @@ go 1.23.4
 require (
 	github.com/RichardKnop/go-fixtures v0.0.0-20191226211317-8d7ddb76c9e2
 	github.com/davecgh/go-spew v1.1.1
-	github.com/diki-haryadi/protobuf-ecomerce v0.1.8
+	github.com/diki-haryadi/protobuf-ecomerce v0.1.9
 	github.com/diki-haryadi/protobuf-template v0.0.0-20241114145947-cffb40e44840
 	github.com/diki-haryadi/ztools v0.0.14
 	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible
@@ -26,7 +26,7 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.30.0
 	golang.org/x/sys v0.28.0
-	google.golang.org/grpc v1.69.0
+	google.golang.org/grpc v1.69.2
 )
 
 require (
